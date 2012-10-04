@@ -50,8 +50,7 @@ module ActiveGit
           define_job do
             bulk_inserts.each do |model, records|
               import_result = model.import records, :timestamps => false
-              #raise SynchronizationError.new(import_result.failed_instances) unless import_result.failed_instances.empty?
-              raise 'SynchronizationError' unless import_result.failed_instances.empty?
+              raise SynchronizationError.new(import_result.failed_instances) unless import_result.failed_instances.empty?
             end
           end
         end

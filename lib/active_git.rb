@@ -5,6 +5,7 @@ require 'json'
 
 require 'active_git/version'
 require 'active_git/synchronizer'
+require 'active_git/synchronization_error'
 require 'active_git/events/db_event'
 require 'active_git/events/db_create'
 require 'active_git/events/db_update'
