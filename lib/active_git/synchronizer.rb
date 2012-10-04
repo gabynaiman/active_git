@@ -11,17 +11,6 @@ module ActiveGit
       batch.run
     end
 
-    class Job
-
-      def initialize(&block)
-        @block = block
-      end
-
-      def run
-        @block.call
-      end
-
-    end
 
     class Batch
 
@@ -69,7 +58,7 @@ module ActiveGit
 
         ::ActiveRecord::Base.transaction do
           jobs.each do |job|
-            job.run
+            job.call
           end
         end
       end
@@ -90,7 +79,7 @@ module ActiveGit
       end
 
       def define_job(&block)
-        jobs << Job.new(&block)
+        jobs << Proc.new(&block)
       end
 
     end
