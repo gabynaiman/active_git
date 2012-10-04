@@ -67,7 +67,7 @@ module ActiveGit
           end
         end
 
-        ActiveRecord::Base.transaction do
+        ::ActiveRecord::Base.transaction do
           jobs.each do |job|
             job.run
           end

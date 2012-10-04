@@ -1,9 +1,9 @@
 module ActiveGit
   class FileEvent
 
-    def initialize(data, path)
+    def initialize(data, path=nil)
       @data = data
-      @path = path
+      @path = path || ActiveGit.configuration.repository_path
     end
 
     def synchronize(synchronizer)
@@ -21,7 +21,7 @@ module ActiveGit
     end
 
     def file_name
-      file_name = "#{model_path}/#{@data.id}.json"
+      "#{model_path}/#{@data.id}.json"
     end
 
     def json
