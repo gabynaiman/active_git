@@ -112,6 +112,28 @@ describe ActiveGit::Commands do
       end
     end
 
+    it 'Checkout' do
+      Language.create name: 'Spanish'
+      Language.create name: 'English'
+
+      ActiveGit.commit_all 'Commit 1'
+      ActiveGit.branch 'branch_test'
+      ActiveGit.checkout 'branch_test'
+
+      Language.first.destroy
+      ActiveGit.commit_all 'Commit 2'
+
+      Language.count.should eq 1
+
+      ActiveGit.checkout 'master'
+
+      Language.count.should eq 2
+
+      ActiveGit.checkout 'branch_test'
+
+      Language.count.should eq 1
+    end
+
   end
 
 end

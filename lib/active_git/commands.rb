@@ -54,24 +54,11 @@ module ActiveGit
 
       diffs ||= repository.diff(last_log.commit_hash)
       begin
-        events = diffs.map do |d|
-          file_name = "#{location}/#{d.file_name}"
-
-          if d.status == :new_file
-            DbCreate.new file_name
-          elsif [:modified, :renamed, :copied].include? d.status
-            DbUpdate.new file_name
-          elsif d.status == :deleted
-            DbDelete.new file_name
-          else
-            raise "Unexpected file status [#{d.status}]"
-          end
-        end
-
-        Synchronizer.synchronize events
+        synchronize_diffs diffs
       rescue => e
+        ::ActiveRecord::Base.logger.error "[ActiveGit] #{e}"
         reset :mode => :hard, :commit => last_log.commit_hash
-        raise e
+        return false
       end
 
       true
@@ -98,6 +85,41 @@ module ActiveGit
           f.puts JSON.pretty_generate(merge)
         end
       end
+    end
+
+    def checkout(commit, new_branch=nil)
+      current = current_branch
+      diffs = repository.diff_reverse commit
+      if repository.checkout(commit.split('/').last, new_branch)
+        begin
+          synchronize_diffs diffs
+        rescue SynchronizationError => e
+          ::ActiveRecord::Base.logger.error "[ActiveGit] #{e}"
+          repository.checkout current
+          return false
+        end
+      end
+      true
+    end
+
+    private
+
+    def synchronize_diffs(diffs)
+      events = diffs.map do |d|
+        file_name = "#{location}/#{d.file_name}"
+
+        if d.status == :new_file
+          DbCreate.new file_name
+        elsif [:modified, :renamed, :copied].include? d.status
+          DbUpdate.new file_name
+        elsif d.status == :deleted
+          DbDelete.new file_name
+        else
+          raise "Unexpected file status [#{d.status}]"
+        end
+      end
+
+      Synchronizer.synchronize events
     end
 
   end
