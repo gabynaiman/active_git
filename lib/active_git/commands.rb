@@ -32,5 +32,10 @@ module ActiveGit
       Synchronizer.synchronize events
     end
 
+    def commit_all(message)
+      add_all
+      commit(message)
+    end
+
   end
 end

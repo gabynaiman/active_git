@@ -5,6 +5,7 @@ describe ActiveGit::Commands do
   before :each do
     @file_helper = FileHelper.new
     ActiveGit.configuration.working_path = @file_helper.create_temp_folder
+    ActiveGit.init
   end
 
   after :each do
@@ -53,6 +54,18 @@ describe ActiveGit::Commands do
     languages.each do |language|
       language.reload.should be_a Language
     end
+  end
+
+  it 'Commit all files' do
+    Language.create name: 'Spanish'
+
+    ActiveGit.status.should_not be_empty
+
+    ActiveGit.commit_all 'Commit for test'
+
+    ActiveGit.status.should be_empty
+
+    ActiveGit.log.first.subject.should eq 'Commit for test'
   end
 
 end
