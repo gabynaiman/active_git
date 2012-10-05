@@ -2,6 +2,7 @@ require 'active_record'
 require 'git_wrapper'
 require 'activerecord-import'
 require 'json'
+require 'easy_diff'
 
 require 'active_git/version'
 require 'active_git/synchronizer'
