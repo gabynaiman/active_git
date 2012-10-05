@@ -63,7 +63,7 @@ describe ActiveGit::Commands do
   context 'Git synchronization' do
 
     it 'Commit all files' do
-      Language.create name: 'Spanish'
+      Language.create! name: 'Spanish'
 
       ActiveGit.status.should_not be_empty
 
@@ -78,8 +78,8 @@ describe ActiveGit::Commands do
       bare = GitWrapper::Repository.new @file_helper.create_temp_folder
       bare.init_bare
 
-      spanish = Language.create name: 'Spanish'
-      english = Language.create name: 'English'
+      spanish = Language.create! name: 'Spanish'
+      english = Language.create! name: 'English'
       ActiveGit.commit_all 'Local commit'
       ActiveGit.add_remote 'bare', bare.location
       ActiveGit.push 'bare'
@@ -113,8 +113,8 @@ describe ActiveGit::Commands do
     end
 
     it 'Checkout' do
-      Language.create name: 'Spanish'
-      Language.create name: 'English'
+      Language.create! name: 'Spanish'
+      Language.create! name: 'English'
 
       ActiveGit.commit_all 'Commit 1'
       ActiveGit.branch 'branch_test'
@@ -132,6 +132,71 @@ describe ActiveGit::Commands do
       ActiveGit.checkout 'branch_test'
 
       Language.count.should eq 1
+    end
+
+    it 'Reset to specific commit' do
+      spanish = Language.create! name: 'Spanish'
+      ActiveGit.commit_all 'Commit 1'
+
+      english = Language.create! name: 'English'
+      ActiveGit.commit_all 'Commit 1'
+
+      Language.count.should eq 2
+      File.exist?(spanish.git_file).should be_true
+      File.exist?(english.git_file).should be_true
+
+      ActiveGit.reset ActiveGit.log.last.commit_hash
+
+      Language.count.should eq 1
+      File.exist?(spanish.git_file).should be_true
+      File.exist?(english.git_file).should be_false
+    end
+
+    it 'Reset to HEAD' do
+      spanish = Language.create! name: 'Spanish'
+      ActiveGit.commit_all 'Commit 1'
+
+      english = Language.create! name: 'English'
+
+      Language.count.should eq 2
+      File.exist?(spanish.git_file).should be_true
+      File.exist?(english.git_file).should be_true
+
+      ActiveGit.reset
+
+      Language.count.should eq 1
+      File.exist?(spanish.git_file).should be_true
+      File.exist?(english.git_file).should be_false
+    end
+
+    it 'Resolve version conflicts' do
+      bare = GitWrapper::Repository.new @file_helper.create_temp_folder
+      bare.init_bare
+
+      ActiveGit.add_remote 'bare', bare.location
+      
+      spanish = Language.create! name: 'Spanish'
+
+      ActiveGit.commit_all 'commit v1'
+      ActiveGit.push 'bare'
+
+      other_repo = GitWrapper::Repository.new @file_helper.create_temp_folder
+      other_repo.init
+      other_repo.add_remote 'bare', bare.location
+      other_repo.pull 'bare'
+
+      @file_helper.write_file "#{other_repo.location}/languages/#{spanish.id}.json", JSON.pretty_generate(id: spanish.id, name: 'Spanish 2', created_at: Time.now, updated_at: Time.now)
+
+      other_repo.add_all
+      other_repo.commit 'commit v2'
+      other_repo.push 'bare'
+
+      spanish.update_attributes name: 'Spanish 3'
+      ActiveGit.commit 'commit v3'
+
+      ActiveGit.pull 'bare'
+
+      spanish.reload.name.should eq 'Spanish 3'
     end
 
   end

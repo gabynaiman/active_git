@@ -27,6 +27,7 @@ module ActiveGit
           job.call
         end
       end
+      ActiveGit.add_all
     end
 
     def bulk_insert(data)

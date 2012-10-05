@@ -73,7 +73,7 @@ module ActiveGit
         text.present? ? JSON.parse(text) : {}
       end
 
-      conflicts.each do |file_name|
+      events = conflicts.map do |file_name|
         base = json_parse.call(show_base(file_name))
         mine = json_parse.call(show_mine(file_name))
         theirs = json_parse.call(show_theirs(file_name))
@@ -81,10 +81,12 @@ module ActiveGit
         r_diff, a_diff = base.easy_diff(mine)
         merge = theirs.easy_unmerge(r_diff).easy_merge(a_diff)
 
-        File.open("#{location}/#{file_name}", 'w') do |f|
-          f.puts JSON.pretty_generate(merge)
-        end
+        model = File.dirname(file_name).split(/\/|\\/).pop.classify.constantize
+
+        FileSave.new(model.from_json(merge))
       end
+
+      Synchronizer.synchronize events
     end
 
     def checkout(commit, new_branch=nil)
@@ -100,6 +102,17 @@ module ActiveGit
         end
       end
       true
+    end
+
+    def reset(commit='HEAD')
+      begin
+        diffs = diff_reverse commit
+        synchronize_diffs diffs
+        repository.reset :mode => :hard, :commit => commit
+      rescue => e
+        ::ActiveRecord::Base.logger.error "[ActiveGit] #{e}"
+        return false
+      end
     end
 
     private
