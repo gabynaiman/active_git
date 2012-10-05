@@ -3,7 +3,7 @@ module ActiveGit
 
     def initialize(data, path=nil)
       @data = data
-      @path = path || ActiveGit.configuration.repository_path
+      @path = path || ActiveGit.configuration.working_path
     end
 
     def synchronize(synchronizer)

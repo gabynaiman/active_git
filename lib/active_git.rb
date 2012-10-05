@@ -10,14 +10,18 @@ require 'active_git/events/db_event'
 require 'active_git/events/db_create'
 require 'active_git/events/db_update'
 require 'active_git/events/db_delete'
+require 'active_git/events/db_delete_all'
 require 'active_git/events/file_event'
-require 'active_git/events/file_create'
-require 'active_git/events/file_update'
+require 'active_git/events/file_save'
 require 'active_git/events/file_delete'
+require 'active_git/events/folder_remove'
 require 'active_git/active_record_extension'
 require 'active_git/configuration'
+require 'active_git/commands'
+
 
 module ActiveGit
+  extend Commands
 
   def self.configuration
     @@configuration ||= Configuration.new
@@ -25,6 +29,14 @@ module ActiveGit
 
   def self.configure
     yield(configuration)
+  end
+
+  def self.models
+    @@models ||= []
+  end
+
+  def self.repository
+    GitWrapper::Repository.new(ActiveGit.configuration.working_path)
   end
 
 end

@@ -2,19 +2,17 @@ require 'spec_helper'
 
 describe ActiveGit::ActiveRecord do
 
-  before :all do
-    ActiveRecord::Base.establish_connection adapter: 'sqlite3', database: ":memory:"
-    ActiveRecord::Base.connection
-    ActiveRecord::Migrator.migrate ActiveRecord::Migrator.migrations_path
-  end
-
   before :each do
     @file_helper = FileHelper.new
-    ActiveGit.configuration.repository_path = @file_helper.create_temp_folder
+    ActiveGit.configuration.working_path = @file_helper.create_temp_folder
   end
 
   after :each do
     @file_helper.remove_temp_folders
+  end
+
+  it 'Registered models' do
+    ActiveGit.models.should include Language
   end
 
   it 'Create' do

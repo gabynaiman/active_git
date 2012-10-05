@@ -15,4 +15,10 @@ RSpec.configure do |config|
       raise ActiveRecord::Rollback
     end
   end
+
+  config.before :all do
+    ActiveRecord::Base.establish_connection adapter: 'sqlite3', database: ":memory:"
+    ActiveRecord::Base.connection
+    ActiveRecord::Migrator.migrate ActiveRecord::Migrator.migrations_path
+  end
 end

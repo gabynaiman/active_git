@@ -2,7 +2,7 @@ module ActiveGit
   class DbCreate < DbEvent
 
     def synchronize(synchronizer)
-      synchronizer.db_create data
+      synchronizer.bulk_insert data
     end
 
   end

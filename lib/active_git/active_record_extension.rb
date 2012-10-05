@@ -3,26 +3,22 @@ module ActiveGit
 
     module ClassMethods
 
-      def has_git(path=nil)
-        @git_repository_path = path
+      def has_git
+        ActiveGit.models << self
 
-        after_create do |record|
-          Synchronizer.synchronize FileCreate.new(record, path)
-        end
-
-        after_update do |record|
-          Synchronizer.synchronize FileUpdate.new(record, path)
+        after_save do |record|
+          Synchronizer.synchronize FileSave.new(record)
         end
 
         after_destroy do |record|
-          Synchronizer.synchronize FileDelete.new(record, path)
+          Synchronizer.synchronize FileDelete.new(record)
+        end
+
+        def git_folder
+          "#{ActiveGit.configuration.working_path}/#{table_name}"
         end
 
         include InstanceMethods
-
-        define_singleton_method :git_repository_path do
-          @git_repository_path
-        end
       end
 
     end
@@ -30,7 +26,7 @@ module ActiveGit
     module InstanceMethods
 
       def git_file
-        "#{self.class.git_repository_path || ActiveGit.configuration.repository_path}/#{self.class.table_name}/#{id}.json"
+        "#{self.class.git_folder}/#{id}.json"
       end
 
     end
