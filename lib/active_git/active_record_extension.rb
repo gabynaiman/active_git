@@ -3,7 +3,7 @@ module ActiveGit
 
     module ClassMethods
 
-      def has_git
+      def git_versioned
         ActiveGit.models << self
 
         after_save do |record|

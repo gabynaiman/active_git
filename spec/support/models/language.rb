@@ -1,5 +1,5 @@
 class Language < ActiveRecord::Base
-  has_git
+  git_versioned
 
   attr_accessible :name
 end
