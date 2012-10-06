@@ -177,7 +177,7 @@ describe ActiveGit::Commands do
       
       spanish = Language.create! name: 'Spanish'
 
-      ActiveGit.commit_all 'commit v1'
+      ActiveGit.commit_all 'Commit v1'
       ActiveGit.push 'bare'
 
       other_repo = GitWrapper::Repository.new @file_helper.create_temp_folder
@@ -185,18 +185,25 @@ describe ActiveGit::Commands do
       other_repo.add_remote 'bare', bare.location
       other_repo.pull 'bare'
 
-      @file_helper.write_file "#{other_repo.location}/languages/#{spanish.id}.json", JSON.pretty_generate(id: spanish.id, name: 'Spanish 2', created_at: Time.now, updated_at: Time.now)
+      @file_helper.write_file "#{other_repo.location}/languages/#{spanish.id}.json",
+                              JSON.pretty_generate(id: spanish.id, name: 'Spanish 2', created_at: Time.now, updated_at: Time.now)
 
       other_repo.add_all
-      other_repo.commit 'commit v2'
+      other_repo.commit 'Commit v2'
       other_repo.push 'bare'
 
       spanish.update_attributes name: 'Spanish 3'
-      ActiveGit.commit 'commit v3'
+      ActiveGit.commit 'Commit v3'
 
       ActiveGit.pull 'bare'
 
       spanish.reload.name.should eq 'Spanish 3'
+
+      ActiveGit.log.should have(4).items
+      ActiveGit.log[0].subject.should eq 'Resolve conflicts'
+      ActiveGit.log[1].subject.should eq 'Commit v3'
+      ActiveGit.log[2].subject.should eq 'Commit v2'
+      ActiveGit.log[3].subject.should eq 'Commit v1'
     end
 
   end
