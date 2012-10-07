@@ -37,7 +37,8 @@ module ActiveGit
   end
 
   def self.repository
-    GitWrapper::Repository.new(ActiveGit.configuration.working_path)
+    @repository = GitWrapper::Repository.new(ActiveGit.configuration.working_path) if @repository.nil? || @repository.location != ActiveGit.configuration.working_path
+    @repository
   end
 
 end
