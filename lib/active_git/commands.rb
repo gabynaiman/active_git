@@ -57,7 +57,7 @@ module ActiveGit
         synchronize_diffs diffs
       rescue => e
         ::ActiveRecord::Base.logger.error "[ActiveGit] #{e}"
-        reset :mode => :hard, :commit => last_log.commit_hash
+        reset last_log.commit_hash
         return false
       end
 
@@ -110,7 +110,7 @@ module ActiveGit
       begin
         diffs = diff_reverse commit
         synchronize_diffs diffs
-        repository.reset :mode => :hard, :commit => commit
+        repository.reset mode: :hard, commit: commit
       rescue => e
         ::ActiveRecord::Base.logger.error "[ActiveGit] #{e}"
         return false
