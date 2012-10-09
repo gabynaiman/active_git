@@ -100,8 +100,10 @@ module ActiveGit
           repository.checkout current
           return false
         end
+        true
+      else
+        false
       end
-      true
     end
 
     def reset(commit='HEAD')
