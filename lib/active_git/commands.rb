@@ -107,13 +107,18 @@ module ActiveGit
     end
 
     def reset(commit='HEAD')
-      begin
-        diffs = diff_reverse commit
-        synchronize_diffs diffs
-        repository.reset mode: :hard, commit: commit
-      rescue => e
-        ::ActiveRecord::Base.logger.error "[ActiveGit] #{e}"
-        return false
+      diffs = diff_reverse commit
+      if repository.reset mode: :hard, commit: commit
+        begin
+          synchronize_diffs diffs
+        rescue SynchronizationError => e
+          ::ActiveRecord::Base.logger.error "[ActiveGit] #{e}"
+          #TODO: Rollback reset
+          return false
+        end
+        true
+      else
+        false
       end
     end
 
