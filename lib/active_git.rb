@@ -20,6 +20,7 @@ require 'active_git/active_record_extension'
 require 'active_git/configuration'
 require 'active_git/commands'
 
+GitWrapper.logger = ActiveRecord::Base.logger
 
 module ActiveGit
   extend Commands
