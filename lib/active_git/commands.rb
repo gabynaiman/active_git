@@ -8,7 +8,9 @@ module ActiveGit
     end
 
     def dump_db
-      events = [FolderRemove.new(ActiveGit.configuration.working_path)]
+      events = Dir["#{ActiveGit.configuration.working_path}/*"].map do |folder|
+        FolderRemove.new(folder)
+      end
 
       ActiveGit.models.each do |model|
         model.all.each do |record|

@@ -7,7 +7,7 @@ module ActiveGit
 
     def synchronize(synchronizer)
       synchronizer.define_job do
-        ::ActiveRecord::Base.logger.debug "[ActiveGit] Removing working folder #{@path}"
+        ::ActiveRecord::Base.logger.debug "[ActiveGit] Removing folder #{@path}"
         FileUtils.rm_rf @path
       end
     end
