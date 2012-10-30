@@ -37,6 +37,25 @@ describe ActiveGit::Commands do
       end
     end
 
+    it 'Dump single table to files' do
+      language = Language.create! name: 'Spanish'
+      country = Country.create! name: 'Argentina'
+
+      Dir["#{ActiveGit.configuration.working_path}/*"].each { |f| FileUtils.rm_rf f }
+
+      Dir.exists?("#{ActiveGit.configuration.working_path}/languages").should be_false
+      File.exists?("#{ActiveGit.configuration.working_path}/languages/#{language.id}.json").should be_false
+      Dir.exists?("#{ActiveGit.configuration.working_path}/countries").should be_false
+      File.exists?("#{ActiveGit.configuration.working_path}/countries/#{country.id}.json").should be_false
+
+      ActiveGit.dump_db Language
+
+      Dir.exists?("#{ActiveGit.configuration.working_path}/languages").should be_true
+      File.exists?("#{ActiveGit.configuration.working_path}/languages/#{language.id}.json").should be_true
+      Dir.exists?("#{ActiveGit.configuration.working_path}/countries").should be_false
+      File.exists?("#{ActiveGit.configuration.working_path}/countries/#{country.id}.json").should be_false
+    end
+
     it 'Load all files to db' do
       languages = [
           Language.create!(name: 'Spanish'),
@@ -56,6 +75,22 @@ describe ActiveGit::Commands do
       languages.each do |language|
         language.reload.should be_a Language
       end
+    end
+
+    it 'Load single model files to db' do
+      language = Language.create! name: 'Spanish'
+      brand = Brand.create! name: 'Coca Cola'
+
+      File.exists?(language.git_file).should be_true
+      File.exists?(brand.git_file).should be_true
+
+      language.delete
+      brand.delete
+
+      ActiveGit.load_files Language
+
+      Language.find_by_id(language.id).should_not be_nil
+      Brand.find_by_id(brand.id).should be_nil
     end
 
   end
@@ -174,7 +209,7 @@ describe ActiveGit::Commands do
       bare.init_bare
 
       ActiveGit.add_remote 'bare', bare.location
-      
+
       spanish = Language.create! name: 'Spanish'
 
       ActiveGit.commit_all 'Commit v1'

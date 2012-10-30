@@ -1,6 +1,6 @@
-class CreateCountries < ActiveRecord::Migration
+class CreateBrands < ActiveRecord::Migration
   def change
-    create_table :countries do |t|
+    create_table :brands do |t|
       t.string :name, null: false
 
       t.timestamps

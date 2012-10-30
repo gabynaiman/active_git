@@ -7,24 +7,23 @@ module ActiveGit
       end
     end
 
-    def dump_db
-      events = Dir["#{ActiveGit.configuration.working_path}/*"].map do |folder|
+    def dump_db(*models)
+      events = (Dir["#{ActiveGit.configuration.working_path}/*"] - ActiveGit.models).map do |folder|
         FolderRemove.new(folder)
       end
 
-      ActiveGit.models.each do |model|
-        model.all.each do |record|
-          events << FileSave.new(record)
-        end
+      (models.any? ? models : ActiveGit.models).each do |model|
+        events << FolderRemove.new(model.git_folder)
+        events = events + model.all.map { |r| FileSave.new r }
       end
 
       Synchronizer.synchronize events
     end
 
-    def load_files
+    def load_files(*models)
       events = []
 
-      ActiveGit.models.each do |model|
+      (models.any? ? models : ActiveGit.models).each do |model|
         events << DbDeleteAll.new(model)
         Dir.glob("#{model.git_folder}/*.json").each do |file_name|
           events << DbCreate.new(file_name)
