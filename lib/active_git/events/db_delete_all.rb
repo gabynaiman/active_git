@@ -7,7 +7,7 @@ module ActiveGit
 
     def synchronize(synchronizer)
       synchronizer.define_job do
-        ::ActiveRecord::Base.logger.debug "[ActiveGit] Deleting all #{@model.model_name} models"
+        ActiveGit.configuration.logger.debug "[ActiveGit] Deleting all #{@model.model_name} models"
         @model.delete_all
       end
     end

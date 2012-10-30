@@ -57,7 +57,7 @@ module ActiveGit
       begin
         synchronize_diffs diffs
       rescue => e
-        ::ActiveRecord::Base.logger.error "[ActiveGit] #{e}"
+        ActiveGit.configuration.logger.error "[ActiveGit] #{e}"
         reset last_log.commit_hash
         return false
       end
@@ -97,7 +97,7 @@ module ActiveGit
         begin
           synchronize_diffs diffs
         rescue SynchronizationError => e
-          ::ActiveRecord::Base.logger.error "[ActiveGit] #{e}"
+          ActiveGit.configuration.logger.error "[ActiveGit] #{e}"
           repository.checkout current
           return false
         end
@@ -113,7 +113,7 @@ module ActiveGit
         begin
           synchronize_diffs diffs
         rescue SynchronizationError => e
-          ::ActiveRecord::Base.logger.error "[ActiveGit] #{e}"
+          ActiveGit.configuration.logger.error "[ActiveGit] #{e}"
           #TODO: Rollback reset
           return false
         end

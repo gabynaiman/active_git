@@ -15,7 +15,7 @@ module ActiveGit
       unless bulk_inserts.empty?
         define_job do
           bulk_inserts.each do |model, records|
-            ::ActiveRecord::Base.logger.debug "[ActiveGit] Inserting #{model.model_name} models"
+            ActiveGit.configuration.logger.debug "[ActiveGit] Inserting #{model.model_name} models"
             import_result = model.import records, timestamps: false, validate: false
             raise SynchronizationError.new(import_result.failed_instances) unless import_result.failed_instances.empty?
           end

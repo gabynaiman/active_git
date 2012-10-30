@@ -15,7 +15,15 @@ module ActiveGit
 
     def bare_path=(path)
       @bare_path = path
-    end    
+    end
+
+    def logger
+      GitWrapper.logger
+    end
+
+    def logger=(logger)
+      GitWrapper.logger = logger
+    end
 
   end
 end
