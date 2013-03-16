@@ -1,9 +1,9 @@
 module ActiveGit
   class FileEvent
 
-    def initialize(data, path=nil)
+    def initialize(data, working_path=nil)
       @data = data
-      @path = path || ActiveGit.configuration.working_path
+      @working_path = working_path || ActiveGit.configuration.working_path
     end
 
     def synchronize(synchronizer)
@@ -13,15 +13,15 @@ module ActiveGit
     protected
 
     def model
-      @data.class.to_s.classify.constantize
+      @data.class
     end
 
     def model_path
-      "#{@path}/#{model.table_name}"
+      Inflector.dirname(model, @working_path)
     end
 
     def file_name
-      "#{model_path}/#{@data.id}.json"
+      Inflector.filename(@data, @working_path)
     end
 
     def json

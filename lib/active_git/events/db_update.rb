@@ -5,8 +5,8 @@ module ActiveGit
       synchronizer.bulk_insert data
 
       synchronizer.define_job do
-        ActiveGit.configuration.logger.debug "[ActiveGit] Deleting #{data.class.model_name} #{data.id}"
-        record = data.class.find_by_id(data.id)
+        ActiveGit.configuration.logger.debug "[ActiveGit] Deleting #{model.model_name} #{model_id}"
+        record = model.find_by_id(model_id)
         record.delete if record
       end
     end

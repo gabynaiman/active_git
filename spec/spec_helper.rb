@@ -6,7 +6,18 @@ Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each {|f| require f}
 ActiveRecord::Base.logger = Logger.new($stdout)
 ActiveRecord::Migrator.migrations_path = "#{File.dirname(__FILE__)}/migrations"
 
+module InflectorHelper
+  def git_dirname(model, working_path=nil)
+    ActiveGit::Inflector.dirname(model, working_path || ActiveGit.configuration.working_path)
+  end
+
+  def git_filename(instance, working_path=nil)
+    ActiveGit::Inflector.filename(instance, working_path || ActiveGit.configuration.working_path)
+  end
+end
+
 RSpec.configure do |config|
+
   config.around do |example|
     ActiveRecord::Base.transaction do
       example.run
@@ -19,4 +30,7 @@ RSpec.configure do |config|
     ActiveRecord::Base.connection
     ActiveRecord::Migrator.migrate ActiveRecord::Migrator.migrations_path
   end
+
+  include InflectorHelper
+
 end

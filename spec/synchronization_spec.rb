@@ -66,7 +66,7 @@ describe 'ActiveGit::Synchronizers' do
 
       Country.count.should eq 0
 
-      ActiveGit::Synchronizer.synchronize ActiveGit::DbCreate.new(file_name)
+      ActiveGit::Synchronizer.synchronize ActiveGit::DbCreate.new(file_name, working_path)
 
       Country.find(1).name.should eq 'Argentina'
     end
@@ -79,7 +79,7 @@ describe 'ActiveGit::Synchronizers' do
       file_name = "#{working_path}/countries/#{country.id}.json"
       @file_helper.write_file file_name, country.attributes.merge('name' => 'Brasil').to_json
 
-      ActiveGit::Synchronizer.synchronize ActiveGit::DbUpdate.new(file_name)
+      ActiveGit::Synchronizer.synchronize ActiveGit::DbUpdate.new(file_name, working_path)
 
       country.reload.name.should eq 'Brasil'
     end
@@ -91,7 +91,7 @@ describe 'ActiveGit::Synchronizers' do
 
       file_name = "#{working_path}/countries/#{country.id}.json"
 
-      ActiveGit::Synchronizer.synchronize ActiveGit::DbDelete.new(file_name)
+      ActiveGit::Synchronizer.synchronize ActiveGit::DbDelete.new(file_name, working_path)
 
       Country.find_by_id(country.id).should be_nil
     end

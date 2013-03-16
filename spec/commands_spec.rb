@@ -21,17 +21,17 @@ describe ActiveGit::Commands do
       ]
 
       @file_helper.write_file "#{ActiveGit.configuration.working_path}/test.txt", 'test'
-      @file_helper.write_file "#{Language.git_folder}/0.json", 'test'
+      @file_helper.write_file "#{git_dirname(Language)}/0.json", 'test'
 
       ActiveGit.dump_db
 
       File.exist?("#{ActiveGit.configuration.working_path}/test.txt").should be_false
 
-      Dir.glob("#{Language.git_folder}/*.json").should have(2).items
+      Dir.glob("#{git_dirname(Language)}/*.json").should have(2).items
 
       languages.each do |language|
-        File.exist?(language.git_file).should be_true
-        json = JSON.parse(@file_helper.read_file(language.git_file))
+        File.exist?(git_filename(language)).should be_true
+        json = JSON.parse(@file_helper.read_file(git_filename(language)))
         json['id'].should eq language.id
         json['name'].should eq language.name
       end
@@ -65,7 +65,7 @@ describe ActiveGit::Commands do
       Language.first.delete
 
       languages.each do |language|
-        File.exist?(language.git_file).should be_true
+        File.exist?(git_filename(language)).should be_true
       end
 
       ActiveGit.load_files
@@ -81,8 +81,8 @@ describe ActiveGit::Commands do
       language = Language.create! name: 'Spanish'
       brand = Brand.create! name: 'Coca Cola'
 
-      File.exists?(language.git_file).should be_true
-      File.exists?(brand.git_file).should be_true
+      File.exists?(git_filename(language)).should be_true
+      File.exists?(git_filename(brand)).should be_true
 
       language.delete
       brand.delete
@@ -143,7 +143,7 @@ describe ActiveGit::Commands do
       ActiveGit.log.first.subject.should eq 'Remote commit'
       Language.count.should eq 3
       ['Spanish 2', 'Portuguese', 'French'].each do |lang_name|
-        File.exist?(Language.find_by_name(lang_name).git_file).should be_true
+        File.exist?(git_filename(Language.find_by_name(lang_name))).should be_true
       end
     end
 
@@ -177,14 +177,14 @@ describe ActiveGit::Commands do
       ActiveGit.commit_all 'Commit 1'
 
       Language.count.should eq 2
-      File.exist?(spanish.git_file).should be_true
-      File.exist?(english.git_file).should be_true
+      File.exist?(git_filename(spanish)).should be_true
+      File.exist?(git_filename(english)).should be_true
 
       ActiveGit.reset ActiveGit.log.last.commit_hash
 
       Language.count.should eq 1
-      File.exist?(spanish.git_file).should be_true
-      File.exist?(english.git_file).should be_false
+      File.exist?(git_filename(spanish)).should be_true
+      File.exist?(git_filename(english)).should be_false
     end
 
     it 'Reset to HEAD' do
@@ -194,14 +194,14 @@ describe ActiveGit::Commands do
       english = Language.create! name: 'English'
 
       Language.count.should eq 2
-      File.exist?(spanish.git_file).should be_true
-      File.exist?(english.git_file).should be_true
+      File.exist?(git_filename(spanish)).should be_true
+      File.exist?(git_filename(english)).should be_true
 
       ActiveGit.reset
 
       Language.count.should eq 1
-      File.exist?(spanish.git_file).should be_true
-      File.exist?(english.git_file).should be_false
+      File.exist?(git_filename(spanish)).should be_true
+      File.exist?(git_filename(english)).should be_false
     end
 
     it 'Resolve version conflicts' do

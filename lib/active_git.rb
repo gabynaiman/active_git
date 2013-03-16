@@ -19,6 +19,7 @@ require 'active_git/events/folder_remove'
 require 'active_git/active_record_extension'
 require 'active_git/configuration'
 require 'active_git/commands'
+require 'active_git/inflector'
 
 module ActiveGit
   extend Commands

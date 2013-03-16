@@ -14,10 +14,6 @@ module ActiveGit
           Synchronizer.synchronize FileDelete.new(record)
         end
 
-        def git_folder
-          "#{ActiveGit.configuration.working_path}/#{table_name}"
-        end
-
         def from_json(json)
           record = self.new
           hash = json.is_a?(Hash) ? json : JSON.parse(json)
@@ -32,19 +28,8 @@ module ActiveGit
           end
           record
         end
-
-        include InstanceMethods
       end
 
     end
-
-    module InstanceMethods
-
-      def git_file
-        "#{self.class.git_folder}/#{id}.json"
-      end
-
-    end
-
   end
 end

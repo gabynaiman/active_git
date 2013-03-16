@@ -1,8 +1,9 @@
 module ActiveGit
   class DbEvent
 
-    def initialize(file_name)
+    def initialize(file_name, working_path=nil)
       @file_name = file_name
+      @working_path = working_path || ActiveGit.configuration.working_path
     end
 
     def synchronize(synchronizer)
@@ -12,11 +13,11 @@ module ActiveGit
     protected
 
     def model
-      @model ||= File.dirname(@file_name).split(/\/|\\/).pop.classify.constantize
+      @model ||= Inflector.model(@file_name, @working_path)
     end
 
     def model_id
-      File.basename(@file_name, '.json')
+      Inflector.model_id @file_name
     end
 
     def data
