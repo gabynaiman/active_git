@@ -1,5 +1,6 @@
 # ActiveGit
 
+[![Gem Version](https://badge.fury.io/rb/active_git.png)](https://rubygems.org/gems/active_git)
 [![Build Status](https://travis-ci.org/gabynaiman/active_git.png?branch=master)](https://travis-ci.org/gabynaiman/active_git)
 
 DB and GIT synchronization via ActiveRecord and GitWrapper
