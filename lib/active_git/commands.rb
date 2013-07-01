@@ -44,7 +44,7 @@ module ActiveGit
     end
 
     def merge(commit)
-      last_log = log.first
+      last_log = (log || []).first
       diffs = diff_reverse commit unless last_log
 
       unless repository.merge(commit)
@@ -58,7 +58,7 @@ module ActiveGit
         synchronize_diffs diffs
       rescue => e
         ActiveGit.configuration.logger.error "[ActiveGit] #{e}"
-        reset last_log.commit_hash
+        last_log ? reset(last_log.commit_hash) : reset
         return false
       end
 

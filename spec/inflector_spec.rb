@@ -12,6 +12,10 @@ describe ActiveGit::Inflector do
     ActiveGit::Inflector.dirname(Crm::Customer, working_path).should eq "#{working_path}/crm/customers"
   end
 
+  it 'Git relative path' do
+    ActiveGit::Inflector.relative_dirname(Country).should eq "countries"
+  end
+
   it 'Git file' do
     country = Country.create! name: 'Argentina'
     ActiveGit::Inflector.filename(country, working_path).should eq "#{working_path}/countries/#{country.id}.json"
@@ -20,6 +24,11 @@ describe ActiveGit::Inflector do
   it 'Git file for nested model' do
     customer = Crm::Customer.create! name: 'Monster Inc.'
     ActiveGit::Inflector.filename(customer, working_path).should eq "#{working_path}/crm/customers/#{customer.id}.json"
+  end
+
+  it 'Git relative file' do
+    country = Country.create! name: 'Argentina'
+    ActiveGit::Inflector.relative_filename(country).should eq "countries/#{country.id}.json"
   end
 
   it 'Model from filename' do

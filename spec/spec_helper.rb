@@ -4,7 +4,10 @@ require 'logger'
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each {|f| require f}
 
 ActiveRecord::Base.logger = Logger.new($stdout)
+ActiveRecord::Base.logger.level = Logger::Severity::ERROR
 ActiveRecord::Migrator.migrations_path = "#{File.dirname(__FILE__)}/migrations"
+
+ActiveGit.configuration.logger.level = Logger::Severity::ERROR
 
 module InflectorHelper
   def git_dirname(model, working_path=nil)
