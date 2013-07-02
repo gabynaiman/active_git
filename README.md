@@ -2,6 +2,9 @@
 
 [![Gem Version](https://badge.fury.io/rb/active_git.png)](https://rubygems.org/gems/active_git)
 [![Build Status](https://travis-ci.org/gabynaiman/active_git.png?branch=master)](https://travis-ci.org/gabynaiman/active_git)
+[![Coverage Status](https://coveralls.io/repos/gabynaiman/active_git/badge.png?branch=master)](https://coveralls.io/r/gabynaiman/active_git?branch=master)
+[![Code Climate](https://codeclimate.com/github/gabynaiman/active_git.png)](https://codeclimate.com/github/gabynaiman/active_git)
+[![Dependency Status](https://gemnasium.com/gabynaiman/active_git.png)](https://gemnasium.com/gabynaiman/active_git)
 
 DB and GIT synchronization via ActiveRecord and GitWrapper
 

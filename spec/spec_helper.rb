@@ -1,3 +1,4 @@
+require 'coverage_helper'
 require 'active_git'
 require 'logger'
 
