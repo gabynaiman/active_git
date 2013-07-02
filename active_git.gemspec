@@ -26,7 +26,9 @@ Gem::Specification.new do |s|
   s.add_development_dependency "simplecov"
   if RUBY_ENGINE == 'jruby'
     s.add_development_dependency 'activerecord-jdbcsqlite3-adapter'
+    s.add_development_dependency 'activerecord-jdbcpostgresql-adapter'
   else
     s.add_development_dependency 'sqlite3'
+    s.add_development_dependency 'pg'
   end
 end
