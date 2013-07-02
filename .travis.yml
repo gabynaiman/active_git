@@ -7,4 +7,3 @@ rvm:
 before_script:
   - git config --global user.name "User Name"
   - git config --global user.email "user@mail.com"
-script: bundle exec rspec spec
