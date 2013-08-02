@@ -37,7 +37,7 @@ describe 'ActiveGit' do
       File.exist?("#{working_path}/countries/#{uruguay.id}.json").should be_true
       File.exist?("#{working_path}/countries/#{brasil.id}.json").should be_false
 
-      ActiveGit::Synchronizer.synchronize ActiveGit::FileSave.new(brasil, working_path)
+      ActiveGit.synchronize ActiveGit::FileSave.new(brasil, working_path)
 
       File.exist?("#{working_path}/countries/#{brasil.id}.json").should be_true
     end
