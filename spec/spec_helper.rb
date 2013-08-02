@@ -1,3 +1,4 @@
+require 'coverage_helper'
 require 'active_git'
 require 'logger'
 
@@ -29,7 +30,11 @@ RSpec.configure do |config|
   end
 
   config.before :all do
-    ActiveRecord::Base.establish_connection adapter: 'sqlite3', database: ":memory:"
+    if ENV['DB'] == 'postgresql'
+      ActiveRecord::Base.establish_connection adapter: 'postgresql', database: 'test', username: 'postgres'
+    else
+      ActiveRecord::Base.establish_connection adapter: 'sqlite3', database: ':memory:'
+    end
     ActiveRecord::Base.connection
     ActiveRecord::Migrator.migrate ActiveRecord::Migrator.migrations_path
   end

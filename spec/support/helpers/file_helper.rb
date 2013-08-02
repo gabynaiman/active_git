@@ -19,12 +19,6 @@ class FileHelper
     end
   end
 
-  def create_temp_file(folder, content)
-    file_name = "#{folder}/file #{timestamp}.txt"
-    write_file file_name, content
-    file_name
-  end
-
   def write_file(file_name, content)
     Dir.mkdir File.dirname(file_name) unless Dir.exist? File.dirname(file_name)
     File.open(file_name, 'w') { |f| f.puts content }

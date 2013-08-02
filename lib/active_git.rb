@@ -3,6 +3,7 @@ require 'git_wrapper'
 require 'activerecord-import'
 require 'json'
 require 'easy_diff'
+require 'set'
 
 require 'active_git/version'
 require 'active_git/synchronizer'
@@ -33,7 +34,7 @@ module ActiveGit
   end
 
   def self.models
-    @models ||= []
+    @models ||= Set.new
   end
 
   def self.repository
