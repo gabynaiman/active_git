@@ -25,15 +25,15 @@ module ActiveGit
   extend Commands
 
   def self.configuration
-    @@configuration ||= Configuration.new
+    @configuration ||= Configuration.new
   end
 
   def self.configure
-    yield(configuration)
+    yield configuration
   end
 
   def self.models
-    @@models ||= []
+    @models ||= []
   end
 
   def self.repository
@@ -41,7 +41,31 @@ module ActiveGit
     @repository
   end
 
+  def self.synchronize(*events)
+    if @batch_mode
+      enqueue events
+    else
+      Synchronizer.synchronize events
+    end
+  end
+
+  def self.batch(&block)
+    @batch_mode = true
+    begin
+      yield
+      Synchronizer.synchronize @events
+      @events.clear
+    ensure
+      @batch_mode = false
+    end
+  end
+
+  private
+
+  def self.enqueue(*events)
+    @events = (@events || []) + events
+  end
+
 end
 
 ActiveRecord::Base.send :extend, ActiveGit::ActiveRecord::ClassMethods
-

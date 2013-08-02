@@ -7,11 +7,11 @@ module ActiveGit
         ActiveGit.models << self
 
         after_save do |record|
-          Synchronizer.synchronize FileSave.new(record)
+          ActiveGit.synchronize FileSave.new(record)
         end
 
         after_destroy do |record|
-          Synchronizer.synchronize FileDelete.new(record)
+          ActiveGit.synchronize FileDelete.new(record)
         end
 
         def from_json(json)

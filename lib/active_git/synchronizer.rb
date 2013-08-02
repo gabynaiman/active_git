@@ -12,7 +12,7 @@ module ActiveGit
     end
 
     def run
-      unless bulk_inserts.empty?
+      if bulk_inserts.any?
         define_job do
           bulk_inserts.each do |model, records|
             ActiveGit.configuration.logger.debug "[ActiveGit] Inserting #{model.model_name} models"
@@ -23,10 +23,9 @@ module ActiveGit
       end
 
       ::ActiveRecord::Base.transaction do
-        jobs.each do |job|
-          job.call
-        end
+        jobs.each(&:call)
       end
+
       ActiveGit.add_all
     end
 
