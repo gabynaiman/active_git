@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
   s.test_files    = s.files.grep(%r{^(test|spec|features)/})
   s.require_paths = ["lib"]
 
-  s.add_dependency 'activerecord', '>= 3.0.0'
+  s.add_dependency 'activerecord', '~> 3.2'
   s.add_dependency 'git_wrapper', '~> 1.1'
   s.add_dependency 'activerecord-import'
   s.add_dependency 'easy_diff'
