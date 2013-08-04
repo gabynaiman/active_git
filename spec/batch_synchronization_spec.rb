@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe 'ActiveGit' do
+describe ActiveGit do
 
   before :each do
     @file_helper = FileHelper.new
@@ -10,36 +10,130 @@ describe 'ActiveGit' do
     @file_helper.remove_temp_folders
   end
 
-  context 'Target GIT' do
+  context 'Manual synchornization' do
 
-    it 'Create' do
-      working_path = @file_helper.create_temp_folder
-
-      Country.find_by_name('Argentina').should be_nil
-      Country.find_by_name('Uruguay').should be_nil
-
-      ActiveGit::batch do
-        country = Country.create! name: 'Argentina'
-        ActiveGit.synchronize ActiveGit::FileSave.new(country, working_path)
-
-        File.exist?("#{working_path}/countries/#{country.id}.json").should be_false
-
-        country = Country.create! name: 'Uruguay'
-        ActiveGit.synchronize ActiveGit::FileSave.new(country, working_path)
-
-        File.exist?("#{working_path}/countries/#{country.id}.json").should be_false
-      end
-      argentina = Country.find_by_name 'Argentina'
-      uruguay = Country.find_by_name 'Uruguay'
+    it 'Single model' do
+      argentina = Country.create! name: 'Argentina'
       brasil = Country.create! name: 'Brasil'
 
-      File.exist?("#{working_path}/countries/#{argentina.id}.json").should be_true
-      File.exist?("#{working_path}/countries/#{uruguay.id}.json").should be_true
-      File.exist?("#{working_path}/countries/#{brasil.id}.json").should be_false
+      working_path = @file_helper.create_temp_folder
+
+      File.exist?("#{working_path}/countries/#{argentina.id}.json").should be false
+      File.exist?("#{working_path}/countries/#{brasil.id}.json").should be false
+
+      ActiveGit.synchronize ActiveGit::FileSave.new(argentina, working_path)
+
+      File.exist?("#{working_path}/countries/#{argentina.id}.json").should be true
+      File.exist?("#{working_path}/countries/#{brasil.id}.json").should be false
 
       ActiveGit.synchronize ActiveGit::FileSave.new(brasil, working_path)
 
-      File.exist?("#{working_path}/countries/#{brasil.id}.json").should be_true
+      File.exist?("#{working_path}/countries/#{argentina.id}.json").should be true
+      File.exist?("#{working_path}/countries/#{brasil.id}.json").should be true
+    end
+
+    it 'Batch mode' do
+      argentina = Country.create! name: 'Argentina'
+      brasil = Country.create! name: 'Brasil'
+
+      working_path = @file_helper.create_temp_folder
+
+      File.exist?("#{working_path}/countries/#{argentina.id}.json").should be false
+      File.exist?("#{working_path}/countries/#{brasil.id}.json").should be false
+
+      ActiveGit.batch do
+        ActiveGit.synchronize ActiveGit::FileSave.new(argentina, working_path)
+        ActiveGit.synchronize ActiveGit::FileSave.new(brasil, working_path)
+
+        File.exist?("#{working_path}/countries/#{argentina.id}.json").should be false
+        File.exist?("#{working_path}/countries/#{brasil.id}.json").should be false
+      end
+
+      File.exist?("#{working_path}/countries/#{argentina.id}.json").should be true
+      File.exist?("#{working_path}/countries/#{brasil.id}.json").should be true
+    end
+
+    it 'Handle exceptions' do
+      argentina = Country.create! name: 'Argentina'
+      brasil = Country.create! name: 'Brasil'
+
+      working_path = @file_helper.create_temp_folder
+
+      File.exist?("#{working_path}/countries/#{argentina.id}.json").should be false
+      File.exist?("#{working_path}/countries/#{brasil.id}.json").should be false
+
+      expect do
+        ActiveGit.batch do
+          ActiveGit.synchronize ActiveGit::FileSave.new(argentina, working_path)
+          ActiveGit.synchronize ActiveGit::FileSave.new(brasil, working_path)
+          raise 'Force error'
+        end
+      end.to raise_error
+
+      File.exist?("#{working_path}/countries/#{argentina.id}.json").should be false
+      File.exist?("#{working_path}/countries/#{brasil.id}.json").should be false
+
+      uruguay = Country.create! name: 'Uruguay'
+      ActiveGit.batch do
+        ActiveGit.synchronize ActiveGit::FileSave.new(uruguay, working_path)
+      end
+
+      File.exist?("#{working_path}/countries/#{argentina.id}.json").should be false
+      File.exist?("#{working_path}/countries/#{brasil.id}.json").should be false
+      File.exist?("#{working_path}/countries/#{uruguay.id}.json").should be true
+    end
+    
+  end
+
+  context 'ActiveRecord synchornization' do
+
+    before :each do
+      ActiveGit.configuration.working_path = @file_helper.create_temp_folder
+    end
+    
+    it 'Single model' do
+      language = Language.create! name: 'Spanish'
+
+      File.exist?(git_filename(language)).should be true
+    end
+
+    it 'Batch mode' do
+      spanish = nil
+      english = nil
+
+      ActiveGit.batch do
+        spanish = Language.create! name: 'Spanish'
+        english = Language.create! name: 'English'
+
+        File.exist?(git_filename(spanish)).should be false
+        File.exist?(git_filename(english)).should be false
+      end
+
+      File.exist?(git_filename(spanish)).should be true
+      File.exist?(git_filename(english)).should be true
+    end
+
+    it 'Handle exceptions' do
+      spanish = nil
+      english = nil
+      portuguese = nil      
+
+      expect do
+        ActiveGit.batch do
+          spanish = Language.create! name: 'Spanish'
+          english = Language.create! name: 'English'
+
+          raise 'Force error'
+        end
+      end.to raise_error
+
+      ActiveGit.batch do
+        portuguese = Language.create! name: 'Portuguese'
+      end
+
+      File.exist?(git_filename(spanish)).should be false
+      File.exist?(git_filename(english)).should be false
+      File.exist?(git_filename(portuguese)).should be true
     end
 
   end

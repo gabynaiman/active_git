@@ -18,7 +18,7 @@ describe ActiveGit::ActiveRecord do
   it 'Create' do
     language = Language.create! name: 'Spanish'
 
-    File.exist?(git_filename(language)).should be_true
+    File.exist?(git_filename(language)).should be true
 
     json = JSON.parse(@file_helper.read_file(git_filename(language)))
 
@@ -41,11 +41,11 @@ describe ActiveGit::ActiveRecord do
   it 'Destroy' do
     language = Language.create! name: 'Spanish'
 
-    File.exist?(git_filename(language)).should be_true
+    File.exist?(git_filename(language)).should be true
 
     language.destroy
 
-    File.exist?(git_filename(language)).should be_false
+    File.exist?(git_filename(language)).should be false
   end
 
   it 'Load from json' do

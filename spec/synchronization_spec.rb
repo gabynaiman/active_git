@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe 'ActiveGit::Synchronizers' do
+describe ActiveGit::Synchronizer do
 
   before :each do
     @file_helper = FileHelper.new
@@ -17,11 +17,11 @@ describe 'ActiveGit::Synchronizers' do
 
       working_path = @file_helper.create_temp_folder
 
-      File.exist?("#{working_path}/countries/#{country.id}.json").should be_false
+      File.exist?("#{working_path}/countries/#{country.id}.json").should be false
 
       ActiveGit::Synchronizer.synchronize ActiveGit::FileSave.new(country, working_path)
 
-      File.exist?("#{working_path}/countries/#{country.id}.json").should be_true
+      File.exist?("#{working_path}/countries/#{country.id}.json").should be true
     end
 
     it 'Update' do
@@ -51,7 +51,7 @@ describe 'ActiveGit::Synchronizers' do
 
       ActiveGit::Synchronizer.synchronize ActiveGit::FileDelete.new(country, working_path)
 
-      File.exist?("#{working_path}/countries/#{country.id}.json").should be_false
+      File.exist?("#{working_path}/countries/#{country.id}.json").should be false
     end
 
   end

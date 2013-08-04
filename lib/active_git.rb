@@ -55,9 +55,9 @@ module ActiveGit
     begin
       yield
       Synchronizer.synchronize @events
-      @events.clear
     ensure
       @batch_mode = false
+      @events.clear
     end
   end
 
