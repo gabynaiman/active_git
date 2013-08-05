@@ -21,7 +21,7 @@ module ActiveGit
     end
 
     def data
-      json = File.open(@file_name, 'r') { |f| f.readlines.join("\n") }
+      json = File.open(@file_name, 'r') { |f| f.read }
       model.from_json(json)
     end
 
