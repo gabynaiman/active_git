@@ -1,6 +1,12 @@
 module ActiveGit
   class Configuration
 
+    attr_accessor :sync_batch_size
+
+    def initialize
+      @sync_batch_size = 10000
+    end
+
     def working_path
       @working_path.is_a?(Proc) ? @working_path.call : @working_path
     end

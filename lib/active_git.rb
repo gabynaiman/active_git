@@ -53,11 +53,12 @@ module ActiveGit
   def self.batch(&block)
     @batch_mode = true
     begin
-      yield
+      result = yield
       Synchronizer.synchronize @events
+      result
     ensure
       @batch_mode = false
-      @events.clear
+      @events.clear if @events
     end
   end
 

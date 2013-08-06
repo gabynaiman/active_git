@@ -15,9 +15,11 @@ module ActiveGit
       if bulk_inserts.any?
         define_job do
           bulk_inserts.each do |model, records|
-            ActiveGit.configuration.logger.debug "[ActiveGit] Inserting #{model.model_name} models"
-            import_result = model.import records, timestamps: false, validate: false
-            raise SynchronizationError.new(import_result.failed_instances) unless import_result.failed_instances.empty?
+            records.each_slice(ActiveGit.configuration.sync_batch_size) do |batch_records|
+              ActiveGit.configuration.logger.debug "[ActiveGit] Inserting #{model.model_name} models"
+              import_result = model.import batch_records, timestamps: false, validate: false
+              raise SynchronizationError.new(import_result.failed_instances) unless import_result.failed_instances.empty?
+            end
           end
         end
       end
@@ -30,18 +32,17 @@ module ActiveGit
     end
 
     def bulk_insert(data)
-      bulk_inserts[data.class] ||= [] unless bulk_inserts.has_key? data.class
       bulk_inserts[data.class] << data
     end
 
     def define_job(&block)
-      jobs << Proc.new(&block)
+      jobs << block
     end
 
     private
 
     def bulk_inserts
-      @bulk_inserts ||= {}
+      @bulk_inserts ||= Hash.new{|h,k| h[k] = []}
     end
 
     def jobs

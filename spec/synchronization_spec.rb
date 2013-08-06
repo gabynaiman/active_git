@@ -96,6 +96,29 @@ describe ActiveGit::Synchronizer do
       Country.find_by_id(country.id).should be_nil
     end
 
+    it 'Batch size' do
+      ActiveGit.configuration.sync_batch_size = 2
+
+      working_path = @file_helper.create_temp_folder
+
+      countries = 10.times.map do |i|
+        Country.new(name: "Country #{i}") do |country|
+          country.id = i.to_s
+          country.created_at = Time.now
+          country.updated_at = Time.now
+        end
+      end
+      ActiveGit::Synchronizer.synchronize countries.map {|c| ActiveGit::FileSave.new(c, working_path)}
+
+      events = countries.map do |country|
+        ActiveGit::DbCreate.new(ActiveGit::Inflector.filename(country, working_path), working_path)
+      end
+
+      Country.should_receive(:import).exactly(5).and_call_original
+
+      ActiveGit::Synchronizer.synchronize events
+    end
+
   end
 
 end
