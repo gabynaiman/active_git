@@ -49,7 +49,7 @@ describe ActiveGit::Configuration do
 
   it 'get default logger' do
     logger = ActiveGit.configuration.logger
-    logger.class.should eq 'Logger'
+    logger.class.should eq Logger
   end
 
   it 'set logger' do
