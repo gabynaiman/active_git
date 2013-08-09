@@ -114,7 +114,9 @@ describe ActiveGit::Synchronizer do
         ActiveGit::DbCreate.new(ActiveGit::Inflector.filename(country, working_path), working_path)
       end
 
-      Country.should_receive(:import).exactly(5).and_call_original
+      Country.should_receive(:import).
+              exactly(5).times.
+              and_return(double(failed_instances: []))
 
       ActiveGit::Synchronizer.synchronize events
     end
