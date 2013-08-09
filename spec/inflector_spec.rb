@@ -35,7 +35,7 @@ describe ActiveGit::Inflector do
     ActiveGit::Inflector.model("#{working_path}/countries/1.json", working_path).should be Country
   end
 
-  it 'Model from filename' do
+  it 'Nested model from filename' do
     ActiveGit::Inflector.model("#{working_path}/crm/customers/1.json", working_path).should be Crm::Customer
   end
 
