@@ -50,8 +50,8 @@ describe ActiveGit::ActiveRecord do
 
   it 'Dump' do
     brand = Brand.new name: 'Brand 1',
-                      created_at: Time.parse('2012-04-20T11:24:11-03:00'),
-                      updated_at: Time.parse('2012-04-20T11:24:11-03:00')
+                      created_at: Time.parse('2012-04-20T11:24:11+00:00'),
+                      updated_at: Time.parse('2012-04-20T11:24:11+00:00')
 
     brand.git_dump.should eq File.read("#{File.dirname(__FILE__)}/json/dump.json")
   end
