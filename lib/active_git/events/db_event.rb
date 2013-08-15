@@ -20,13 +20,11 @@ module ActiveGit
       Inflector.model_id @file_name
     end
 
-    def data
-      json = File.open(@file_name, 'r') { |f| f.read }
-      model.from_json(json)
-    end
-
     def create(synchronizer)
-      synchronizer.bulk_insert data
+      json = File.read(@file_name)
+      ModelParser.instances(model, json).each do |instance|
+        synchronizer.bulk_insert instance
+      end
     end
 
     def delete(synchronizer)

@@ -5,13 +5,15 @@ describe ActiveGit::Configuration do
   before :each do
     @working_path = ActiveGit.configuration.working_path
     @bare_path = ActiveGit.configuration.bare_path
+    @logger = ActiveGit.configuration.logger
   end
 
   after :each do
     ActiveGit.configuration.working_path = @working_path
     ActiveGit.configuration.bare_path = @bare_path
+    ActiveGit.configuration.logger = @logger
   end
-  
+
   it 'default sync_batch_size' do
     ActiveGit.configuration.sync_batch_size.should eq 10000
   end
@@ -48,15 +50,14 @@ describe ActiveGit::Configuration do
   end
 
   it 'get default logger' do
-    logger = ActiveGit.configuration.logger
-    logger.class.should eq Logger
+    ActiveGit.configuration.logger.should be_a Logger
   end
 
   it 'set logger' do
-    logger1 = ActiveGit.configuration.logger
-    logger2 = Logger.new('test_config.log')
-    ActiveGit.configuration.logger = logger2
-    ActiveGit.configuration.logger.should eq logger2
+    logger = Logger.new($stdout)
+    ActiveGit.configuration.logger.should_not eq logger
+    ActiveGit.configuration.logger = logger
+    ActiveGit.configuration.logger.should eq logger
   end
-    
+
 end

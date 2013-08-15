@@ -1,0 +1,22 @@
+{
+  "created_at": null,
+  "id": null,
+  "language_id": null,
+  "name": "Argentina",
+  "updated_at": null,
+  "language": {
+    "created_at": null,
+    "id": null,
+    "name": "Spanish",
+    "updated_at": null
+  },
+  "cities": [
+    {
+      "country_id": null,
+      "created_at": null,
+      "id": null,
+      "name": "Bs.As.",
+      "updated_at": null
+    }
+  ]
+}

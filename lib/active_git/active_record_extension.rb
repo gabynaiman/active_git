@@ -3,7 +3,16 @@ module ActiveGit
 
     module ClassMethods
 
-      def git_versioned
+      def git_versioned(options={})
+
+        @options = options.merge root: false
+
+        def git_options
+          @options
+        end
+
+        include InstanceMethods
+
         ActiveGit.models << self
 
         after_save do |record|
@@ -14,22 +23,17 @@ module ActiveGit
           ActiveGit.synchronize FileDelete.new(record)
         end
 
-        def from_json(json)
-          record = self.new
-          hash = json.is_a?(Hash) ? json : JSON.parse(json)
-          hash.each do |attr, value|
-            if record.respond_to? "#{attr}="
-              if self.columns_hash[attr].type == :datetime
-                record.send("#{attr}=", Time.parse(value).utc)
-              else
-                record.send("#{attr}=", value)
-              end
-            end
-          end
-          record
-        end
       end
 
     end
+
+    module InstanceMethods
+
+      def git_dump
+        JSON.pretty_generate(as_json(self.class.git_options))
+      end
+
+    end
+
   end
 end

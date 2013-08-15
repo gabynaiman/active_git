@@ -1,6 +1,8 @@
 module ActiveGit
   class FileEvent
 
+    attr_reader :data
+
     def initialize(data, working_path=nil)
       @data = data
       @working_path = working_path || ActiveGit.configuration.working_path
@@ -22,10 +24,6 @@ module ActiveGit
 
     def file_name
       Inflector.filename(@data, @working_path)
-    end
-
-    def json
-      JSON.pretty_generate(@data.attributes)
     end
 
   end

@@ -48,14 +48,32 @@ describe ActiveGit::ActiveRecord do
     File.exist?(git_filename(language)).should be false
   end
 
-  it 'Load from json' do
-    attributes = {id: 1, name: 'Spanish', created_at: Time.now, updated_at: Time.now}
-    language = Language.from_json attributes.to_json
+  it 'Dump' do
+    brand = Brand.new name: 'Brand 1',
+                      created_at: Time.parse('2012-04-20T11:24:11-03:00'),
+                      updated_at: Time.parse('2012-04-20T11:24:11-03:00')
 
-    language.id.should eq attributes[:id]
-    language.name.should eq attributes[:name]
-    language.created_at.to_i.should eq attributes[:created_at].to_i
-    language.updated_at.to_i.should eq attributes[:updated_at].to_i
+    brand.git_dump.should eq File.read("#{File.dirname(__FILE__)}/json/dump.json")
+  end
+
+  it 'Nested dump' do
+    city = City.new name: 'Bs.As.'
+    country = Country.new name: 'Argentina'
+    country.cities << city
+    language = Language.new name: 'Spanish'
+    language.countries << country
+
+    language.git_dump.should eq File.read("#{File.dirname(__FILE__)}/json/nested_dump.json")
+  end
+
+  it 'Parent and child dump' do
+    language = Language.new name: 'Spanish'
+    city = City.new name: 'Bs.As.'
+    country = Country.new name: 'Argentina'
+    country.cities << city
+    country.language = language
+
+    country.git_dump.should eq File.read("#{File.dirname(__FILE__)}/json/parent_child_dump.json")
   end
 
 end

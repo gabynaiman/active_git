@@ -84,7 +84,7 @@ module ActiveGit
 
         model = File.dirname(file_name).split(/\/|\\/).pop.classify.constantize
 
-        FileSave.new(model.from_json(merge))
+        FileSave.new(ModelParser.from_json(model, merge))
       end
 
       Synchronizer.synchronize events
