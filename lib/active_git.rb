@@ -21,6 +21,7 @@ require 'active_git/active_record_extension'
 require 'active_git/configuration'
 require 'active_git/commands'
 require 'active_git/inflector'
+require 'active_git/model_parser'
 
 module ActiveGit
   extend Commands
@@ -54,18 +55,22 @@ module ActiveGit
     @batch_mode = true
     begin
       result = yield
-      Synchronizer.synchronize @events
+      Synchronizer.synchronize queued_events
       result
     ensure
       @batch_mode = false
-      @events.clear if @events
+      queued_events.clear
     end
   end
 
   private
 
   def self.enqueue(*events)
-    @events = (@events || []) + events
+    events.each { |e| queued_events << e }
+  end
+
+  def self.queued_events
+    @events ||= []
   end
 
 end

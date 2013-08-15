@@ -113,6 +113,11 @@ describe ActiveGit do
       File.exist?(git_filename(english)).should be true
     end
 
+    it 'Batch process without events' do
+      Language.count.should eq 0
+      ActiveGit.batch {}
+    end
+
     it 'Handle exceptions' do
       spanish = nil
       english = nil
