@@ -6,11 +6,11 @@ module ActiveGit
       attributes = json.is_a?(Hash) ? json : JSON.parse(json)
       attributes.each do |attr, value|
         if model.reflections.has_key?(attr.to_sym)
-          model = attr.to_s.classify.constantize
+          attr_model = attr.to_s.classify.constantize
           if value.is_a? Array
-            value.each {|json| list = list + instances(model, json)}
+            value.each {|json| list = list + instances(attr_model, json)}
           else
-            list = list + instances(model, json)
+            list = list + instances(attr_model, value)
           end
         end
       end

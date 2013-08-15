@@ -6,10 +6,6 @@ module ActiveGit
       @working_path = working_path || ActiveGit.configuration.working_path
     end
 
-    def synchronize(synchronizer)
-      raise 'Must implement in subclass'
-    end
-
     private
 
     def model
