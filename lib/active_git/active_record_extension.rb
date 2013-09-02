@@ -11,6 +11,26 @@ module ActiveGit
           @options
         end
 
+        def git_included_models
+          git_included_associations.map { |a| reflections[a] ? reflections[a].klass : a.to_s.classify.constantize }
+        end
+
+        def git_included_associations
+          git_deep_included_associations git_options[:include]
+        end
+
+        def git_deep_included_associations(arg)
+          return [] if arg.nil?
+
+          if arg.is_a? Array
+            arg
+          elsif arg.is_a? Hash
+            arg.keys + git_deep_included_associations(arg.map{|k,v| v[:include]})
+          else
+            [arg]
+          end
+        end
+
         include InstanceMethods
 
         ActiveGit.models << self

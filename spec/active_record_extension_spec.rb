@@ -127,4 +127,16 @@ describe ActiveGit::ActiveRecord do
     country.git_dump.should eq File.read("#{File.dirname(__FILE__)}/json/parent_child_dump.json")
   end
 
+  it 'Included associations' do
+    Language.git_included_associations.should eq [:countries, :cities]
+    Country.git_included_associations.should eq [:language, :cities]
+    Brand.git_included_associations.should be_empty
+  end  
+
+  it 'Included models' do
+    Language.git_included_models.should eq [Country, City]
+    Country.git_included_models.should eq [Language, City]
+    Brand.git_included_models.should be_empty
+  end
+
 end

@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require 'spec_helper'
 
 describe ActiveGit::Commands do
@@ -94,6 +96,21 @@ describe ActiveGit::Commands do
 
       Language.find_by_id(language.id).should_not be_nil
       Brand.find_by_id(brand.id).should be_nil
+    end
+
+    it 'Load nested models' do
+      country = Country.create! name: 'Argentina'
+      country.cities << City.new(name: 'Bs.As.')
+      country.cities << City.new(name: 'Córdoba')
+      country.cities << City.new(name: 'Rosario')
+
+      country.cities[0].delete
+      country.delete
+
+      ActiveGit.load_files Country
+
+      country = Country.find(country.id)
+      country.should have(3).cities
     end
 
   end
