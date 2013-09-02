@@ -9,6 +9,7 @@ Gem::Specification.new do |s|
   s.description   = 'DB and GIT synchronization via ActiveRecord and GitWrapper'
   s.summary       = 'DB and GIT synchronization via ActiveRecord and GitWrapper'
   s.homepage      = 'https://github.com/gabynaiman/active_git'
+  s.license       = 'MIT'
 
   s.files         = `git ls-files`.split($\)
   s.executables   = s.files.grep(%r{^bin/}).map{ |f| File.basename(f) }

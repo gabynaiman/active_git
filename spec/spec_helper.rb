@@ -8,7 +8,7 @@ ActiveRecord::Migrator.migrations_path = "#{File.dirname(__FILE__)}/migrations"
 ActiveRecord::Migration.verbose = false
 
 logger = Logger.new($stdout)
-logger.level = Logger::Severity::FATAL
+logger.level = Logger::Severity::ERROR
 
 ActiveRecord::Base.logger = logger
 ActiveGit.configuration.logger = logger

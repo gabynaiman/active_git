@@ -25,6 +25,21 @@ module ActiveGit
 
       end
 
+      def git_included_in(model)
+
+        after_save do
+          instance = send model
+          #TODO: Ver si se puede optimizar el reload para que no lo haga siempre
+          ActiveGit.synchronize FileSave.new(instance.reload) if instance
+        end
+
+        after_destroy do
+          instance = send model
+          ActiveGit.synchronize FileSave.new(instance.reload) if instance
+        end
+
+      end
+
     end
 
     module InstanceMethods

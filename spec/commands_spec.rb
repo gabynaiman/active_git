@@ -15,45 +15,48 @@ describe ActiveGit::Commands do
   context 'Dump and load' do
 
     it 'Dump complete db to files' do
-      languages = [
+      models = [
           Language.create!(name: 'Spanish'),
-          Language.create!(name: 'English')
+          Language.create!(name: 'English'),
+          Brand.create!(name: 'Coca Cola')
       ]
 
       @file_helper.write_file "#{ActiveGit.configuration.working_path}/test.txt", 'test'
       @file_helper.write_file "#{git_dirname(Language)}/0.json", 'test'
+      @file_helper.write_file "#{git_dirname(Brand)}/0.json", 'test'
 
       ActiveGit.dump_db
 
       File.exist?("#{ActiveGit.configuration.working_path}/test.txt").should be false
 
       Dir.glob("#{git_dirname(Language)}/*.json").should have(2).items
+      Dir.glob("#{git_dirname(Brand)}/*.json").should have(1).items
 
-      languages.each do |language|
-        File.exist?(git_filename(language)).should be true
-        json = JSON.parse(@file_helper.read_file(git_filename(language)))
-        json['id'].should eq language.id
-        json['name'].should eq language.name
+      models.each do |model|
+        File.exist?(git_filename(model)).should be true
+        json = JSON.parse(@file_helper.read_file(git_filename(model)))
+        json['id'].should eq model.id
+        json['name'].should eq model.name
       end
     end
 
     it 'Dump single table to files' do
       language = Language.create! name: 'Spanish'
-      country = Country.create! name: 'Argentina'
+      brand = Brand.create! name: 'Coca Cola'
 
       Dir["#{ActiveGit.configuration.working_path}/*"].each { |f| FileUtils.rm_rf f }
 
       Dir.exists?("#{ActiveGit.configuration.working_path}/languages").should be false
       File.exists?("#{ActiveGit.configuration.working_path}/languages/#{language.id}.json").should be false
-      Dir.exists?("#{ActiveGit.configuration.working_path}/countries").should be false
-      File.exists?("#{ActiveGit.configuration.working_path}/countries/#{country.id}.json").should be false
+      Dir.exists?("#{ActiveGit.configuration.working_path}/brands").should be false
+      File.exists?("#{ActiveGit.configuration.working_path}/brands/#{brand.id}.json").should be false
 
       ActiveGit.dump_db Language
 
       Dir.exists?("#{ActiveGit.configuration.working_path}/languages").should be true
       File.exists?("#{ActiveGit.configuration.working_path}/languages/#{language.id}.json").should be true
-      Dir.exists?("#{ActiveGit.configuration.working_path}/countries").should be false
-      File.exists?("#{ActiveGit.configuration.working_path}/countries/#{country.id}.json").should be false
+      Dir.exists?("#{ActiveGit.configuration.working_path}/brands").should be false
+      File.exists?("#{ActiveGit.configuration.working_path}/brands/#{brand.id}.json").should be false
     end
 
     it 'Load all files to db' do
