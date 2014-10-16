@@ -1,11 +1,18 @@
-#!/usr/bin/env rake
-require "bundler/gem_tasks"
-require 'rspec/core/rake_task'
+require 'bundler/gem_tasks'
+require 'rake/testtask'
 
-RSpec::Core::RakeTask.new do |task|
-  task.pattern = 'spec/**/*_spec.rb'
-  task.rspec_opts = '--tty --color -f documentation'
-  task.verbose = false
+Rake::TestTask.new(:spec) do |t|
+  t.libs << 'spec'
+  t.pattern = 'spec/**/*_spec.rb'
+  t.verbose = false
 end
 
 task default: :spec
+
+desc 'Pry console'
+task :console do
+  require 'active_git'
+  require 'pry'
+  ARGV.clear
+  Pry.start
+end

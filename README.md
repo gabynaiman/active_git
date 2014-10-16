@@ -6,7 +6,7 @@
 [![Code Climate](https://codeclimate.com/github/gabynaiman/active_git.png)](https://codeclimate.com/github/gabynaiman/active_git)
 [![Dependency Status](https://gemnasium.com/gabynaiman/active_git.png)](https://gemnasium.com/gabynaiman/active_git)
 
-DB and GIT synchronization via ActiveRecord and GitWrapper
+Manage Database versions with Git
 
 ## Installation
 
