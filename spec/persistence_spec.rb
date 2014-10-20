@@ -1,6 +1,6 @@
 require 'minitest_helper'
 
-describe ActiveGit::Database do
+describe ActiveGit::Database, 'Persistence' do
 
   it 'Insert' do
     db.save :countries, id: 1, name: 'Argentina'

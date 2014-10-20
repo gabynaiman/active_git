@@ -52,6 +52,20 @@ module ActiveGit
       @transaction_scope.call &block
     end
 
+    def commit(message, options={})
+      params = {
+        message: message,
+        parents: repository.empty? ? [] : [repository.head.target].compact,
+        update_ref: 'HEAD',
+        tree: repository.index.write_tree
+      }
+      
+      params[:author] = options[:author] if options.key? :author
+      params[:committer] = options[:committer] if options.key? :committer
+
+      Rugged::Commit.create repository, params
+    end
+
     private
 
     attr_reader :repository, :transaction_scope
