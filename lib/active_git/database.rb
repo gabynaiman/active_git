@@ -23,6 +23,7 @@ module ActiveGit
     def save(collection_name, object)
       json = JSON.pretty_generate object
       oid = repository.write json, :blob
+      ActiveGit.logger.debug('ActiveGit') { "Write object #{oid} - #{json.gsub("\n", '').gsub(" ", '')}" }
 
       transaction do |ts|
         ts.enqueue do

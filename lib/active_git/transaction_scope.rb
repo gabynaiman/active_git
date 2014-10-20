@@ -4,6 +4,7 @@ module ActiveGit
     def initialize(repository)
       @repository = repository
       @stack = TransactionStack.new
+      @locker = Locker.new repository.path
       @queue = []
     end
 
@@ -32,21 +33,26 @@ module ActiveGit
 
     private
 
-    attr_reader :repository, :stack, :queue
+    attr_reader :repository, :stack, :locker, :queue
 
     def rollback
-      ActiveGit.logger.debug('ActiveGit') { "Rollback (#{repository.workdir})" }
+      ActiveGit.logger.debug('ActiveGit') { "Rollback transaction (#{repository.workdir})" }
       stack.clear
+      repository.index.reload
     end
 
     def commit
+      locker.lock
+
       repository.index.reload
 
       queue.each(&:call)
       queue.clear
 
-      ActiveGit.logger.debug('ActiveGit') { "Commit (#{repository.workdir})" }
+      ActiveGit.logger.debug('ActiveGit') { "Commit transaction (#{repository.workdir})" }
       repository.index.write
+
+      locker.unlock
     end
     
   end
