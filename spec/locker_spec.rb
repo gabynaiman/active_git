@@ -64,14 +64,4 @@ describe ActiveGit::Locker do
     File.exists?(lock_file).must_equal false
   end
 
-  # it 'Transaction' do
-  #   File.exists?(lock_file).must_equal false
-
-  #   db.transaction do
-  #     IO.read(lock_file).must_equal lock_id
-  #   end
-    
-  #   File.exists?(lock_file).must_equal false
-  # end
-
 end
