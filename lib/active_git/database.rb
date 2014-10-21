@@ -16,7 +16,7 @@ module ActiveGit
         blob = repository.lookup entry[:oid]
         JSON.parse blob.content
       else
-        raise NotFound.new collection_name, id
+        raise Errors::NotFound.new collection_name, id
       end
     end
 
@@ -64,6 +64,49 @@ module ActiveGit
       params[:committer] = options[:committer] if options.key? :committer
 
       Rugged::Commit.create repository, params
+    end
+
+    def push(options={})
+      remote = options[:remote] || 'origin'
+
+      ref = 
+        if options[:branch]
+          repository.branches[options[:branch]]
+        elsif options[:tag]
+          repository.tags[options[:tag]]
+        else
+          repository.branches.detect(&:head?)
+        end
+
+      refspec =
+        if options[:mode] == :force
+          "+#{ref.canonical_name}"
+        elsif options[:mode] == :delete
+          ":#{ref.canonical_name}"
+        else
+          ref.canonical_name
+        end
+
+      repository.fetch remote, [refspec]
+      repository.push remote, [refspec]
+
+    rescue Rugged::ReferenceError
+      raise Errors::PushRejected.new repository.workdir, remote, ref.name
+    end
+
+    def current_branch
+      branch = repository.branches.detect(&:head?)
+      branch ? branch.name : 'master'
+    end
+
+    def branch(name, target_id=nil)
+      target_id ||= repository.head.target_id
+      repository.branches.create name, target_id
+    end
+
+    def tag(name, target_id=nil)
+      target_id ||= repository.head.target_id
+      repository.tags.create name, target_id
     end
 
     private

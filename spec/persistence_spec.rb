@@ -36,7 +36,7 @@ describe ActiveGit::Database, 'Persistence' do
   end
 
   it 'Not found' do
-    error = proc { db.find :countries, 1 }.must_raise ActiveGit::NotFound
+    error = proc { db.find :countries, 1 }.must_raise ActiveGit::Errors::NotFound
     error.collection_name.must_equal :countries
     error.id.must_equal 1
     error.message.must_equal 'Not found countries 1'
