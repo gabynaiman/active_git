@@ -3,6 +3,7 @@ require 'active_git'
 require 'minitest/autorun'
 require 'turn'
 require 'pry-nav'
+require 'fileutils'
 
 Turn.config do |c|
   c.format = :pretty
@@ -16,17 +17,21 @@ end
 
 class Minitest::Spec
   REPO_PATH = File.expand_path '../tmp/repo', __FILE__
-  CLONE_PATH = File.expand_path '../tmp/clone', __FILE__
+  OTHER_PATH = File.expand_path '../tmp/clone', __FILE__
   BARE_PATH = File.expand_path '../tmp/bare.git', __FILE__
+  OTHER_BARE_PATH = File.expand_path '../tmp/other_bare.git', __FILE__
 
   before do
-    FileUtils.rm_rf BARE_PATH
-    FileUtils.rm_rf REPO_PATH
-    FileUtils.rm_rf CLONE_PATH
+    Dir.glob(File.expand_path('../tmp/*', __FILE__)).each { |d| FileUtils.rm_rf d }
 
     Rugged::Repository.init_at BARE_PATH, :bare
-    Rugged::Repository.clone_at BARE_PATH, REPO_PATH
-    Rugged::Repository.clone_at BARE_PATH, CLONE_PATH
+    Rugged::Repository.init_at OTHER_BARE_PATH, :bare
+    
+    repo = Rugged::Repository.clone_at BARE_PATH, REPO_PATH
+    repo.remotes.create 'other', OTHER_BARE_PATH
+
+    other = Rugged::Repository.clone_at BARE_PATH, OTHER_PATH
+    other.remotes.create 'other', OTHER_BARE_PATH
   end
 
   let(:db) { ActiveGit::Database.new REPO_PATH }
@@ -35,14 +40,18 @@ class Minitest::Spec
     Rugged::Repository.new REPO_PATH
   end
 
-  let(:clone_db) { ActiveGit::Database.new CLONE_PATH }
+  let(:other_db) { ActiveGit::Database.new OTHER_PATH }
 
-  def clone_repo
-    Rugged::Repository.new CLONE_PATH
+  def other_repo
+    Rugged::Repository.new OTHER_PATH
   end
 
   def bare_repo
     Rugged::Repository.bare BARE_PATH
+  end
+
+  def other_bare_repo
+    Rugged::Repository.bare OTHER_BARE_PATH
   end
 
   def silent

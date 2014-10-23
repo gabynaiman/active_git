@@ -2,7 +2,6 @@ module ActiveGit
   module Errors
   
     class NotFound < StandardError
-
       attr_reader :collection_name, :id
 
       def initialize(collection_name, id)
@@ -13,12 +12,9 @@ module ActiveGit
       def message
         "Not found #{collection_name} #{id}"
       end
-
     end
 
-
     class PushRejected < StandardError
-
       attr_reader :path, :remote, :ref_name
 
       def initialize(path, remote, ref_name)
@@ -30,7 +26,24 @@ module ActiveGit
       def message
         "Push rejected: #{remote} -> #{ref_name} (#{path})"
       end      
+    end
 
+    class UpToDate < StandardError
+    end
+    
+    class CommitPending < StandardError
+    end
+
+    class InvalidBranch < StandardError
+      attr_reader :branch_name
+
+      def initialize(branch_name)
+        @branch_name = branch_name
+      end
+
+      def message
+        "Invalid branch #{branch_name}"
+      end
     end
 
   end

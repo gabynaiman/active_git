@@ -9,26 +9,26 @@ describe ActiveGit::Database, 'Push' do
 
   it 'Default' do
     db.save :countries, id: 1, name: 'Argentina'
-    db.save :countries, id: 2, name: 'Uruguay'
-    db.save :countries, id: 3, name: 'Brasil'
     db.commit 'Test commit'
+
     db.push
 
-    clone_repo.index.count.must_equal 0
+    bare_repo.head.target_id.must_equal repo.head.target_id
+  end
 
-    clone_repo.fetch 'origin'
-    clone_repo.checkout 'origin/master'
+  it 'Remote' do
+    db.save :countries, id: 1, name: 'Argentina'
+    db.commit 'Test commit'
 
-    clone_repo.index.count.must_equal 3
-    read_content(clone_repo, 'countries/1.json').must_equal 'id' => 1, 'name' => 'Argentina'
-    read_content(clone_repo, 'countries/2.json').must_equal 'id' => 2, 'name' => 'Uruguay'
-    read_content(clone_repo, 'countries/3.json').must_equal 'id' => 3, 'name' => 'Brasil'
+    db.push remote: 'other'
+
+    other_bare_repo.head.target_id.must_equal repo.head.target_id
   end
 
   it 'Fail' do
-    clone_db.save :countries, id: 1, name: 'Argentina'
-    clone_db.commit 'Clone commit'
-    clone_db.push
+    other_db.save :countries, id: 1, name: 'Argentina'
+    other_db.commit 'Clone commit'
+    other_db.push
 
     db.save :countries, id: 2, name: 'Uruguay'
     db.commit 'DB commit'
@@ -41,13 +41,15 @@ describe ActiveGit::Database, 'Push' do
   end
 
   it 'Force' do
-    clone_db.save :countries, id: 1, name: 'Argentina'
-    clone_db.commit 'Clone commit'
-    clone_db.push
+    other_db.save :countries, id: 1, name: 'Argentina'
+    other_db.commit 'Clone commit'
+    other_db.push
 
     db.save :countries, id: 2, name: 'Uruguay'
     db.commit 'DB commit'
     db.push mode: :force
+
+    bare_repo.head.target_id.must_equal repo.head.target_id
   end
 
   it 'Delete' do

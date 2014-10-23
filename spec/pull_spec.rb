@@ -2,8 +2,8 @@ require 'minitest_helper'
 
 describe ActiveGit::Database, 'Pull' do
 
-  def assert_empty_file_system(path)
-    Dir.glob(File.join(path, '*')).must_be_empty
+  def assert_empty_file_system(repository)
+    Dir.glob(File.join(repository.workdir, '*')).must_be_empty
   end
 
   def assert_empty_status(repository)
@@ -12,78 +12,94 @@ describe ActiveGit::Database, 'Pull' do
     status.must_be_empty
   end
 
-  # Pull de repo vacio sin commits
   it 'Empty repo' do
-    clone_db.save :countries, id: 1, name: 'Argentina'
-    clone_db.commit 'Test commit'
-    clone_db.push
+    other_db.save :countries, id: 1, name: 'Argentina'
+    other_db.commit 'Test commit'
+    other_db.push
 
     repo.index.count.must_equal 0
 
     db.pull
 
-    repo.head.target_id.must_equal clone_repo.head.target_id
+    repo.head.target_id.must_equal other_repo.head.target_id
     repo.index.count.must_equal 1
     db.find(:countries, 1)['name'].must_equal 'Argentina'
-    assert_empty_file_system repo.workdir
+    assert_empty_file_system repo
     assert_empty_status repo
   end
 
-  # Commit > push repo1, pull > pull repo2 (el segundo no tiene que hacer nada)
-  it 'Up to date'
+  it 'Up to date' do
+    other_db.save :countries, id: 1, name: 'Argentina'
+    other_db.commit 'Test commit'
+    other_db.push
 
-  # Pull (commit pendiente)
-  it 'Commit pending error'
+    db.pull
 
-  # Commit > push repo1, pull > commit > push repo2, pull repo1 (archivos diferentes, no necesita merge)
-  it 'Existent branch' do
+    proc { db.pull }.must_raise ActiveGit::Errors::UpToDate
+  end
+
+  it 'Commit pending error' do
+    db.save :countries, id: 1, name: 'Argentina'
+
+    proc { db.pull }.must_raise ActiveGit::Errors::CommitPending
+
+    db.commit 'Test commit'
+    db.save :countries, id: 2, name: 'Uruguay'
+    
+    proc { db.pull }.must_raise ActiveGit::Errors::CommitPending
+  end
+
+  it 'Update commit reference' do
     db.save :countries, id: 1, name: 'Argentina'
     db.commit 'First commit'
     db.push
 
-    clone_db.pull
-    clone_db.save :countries, id: 2, name: 'Uruguay'
-    clone_db.commit 'Second commit'
-    clone_db.push
+    other_db.pull
+    other_db.save :countries, id: 2, name: 'Uruguay'
+    other_db.commit 'Second commit'
+    other_db.push
 
     db.pull
 
+    repo.head.target_id.must_equal other_repo.head.target_id
     repo.index.count.must_equal 2
     db.find(:countries, 1)['name'].must_equal 'Argentina'
     db.find(:countries, 2)['name'].must_equal 'Uruguay'
-    assert_empty_file_system repo.workdir
+    assert_empty_file_system repo
     assert_empty_status repo
   end
 
-  # Commit > push repo1, commit > pull repo2 (mismo archivo, merge sin conflictos)
   it 'Automatic merge' do
     db.save :countries, id: 1, name: 'Argentina'
     db.commit 'First commit'
     db.push
 
-    clone_db.pull
-    clone_db.save :countries, id: 1, name: 'Uruguay'
-    clone_db.commit 'Second commit'
-    clone_db.push
+    other_db.pull
+    other_db.save :countries, id: 1, name: 'Uruguay'
+    other_db.commit 'Second commit'
+    other_db.push
+
+    db.save :countries, id: 2, name: 'Brasil'
+    db.commit 'Third commit'
 
     db.pull
 
-    repo.index.count.must_equal 1
+    repo.index.count.must_equal 2
     db.find(:countries, 1)['name'].must_equal 'Uruguay'
-    assert_empty_file_system repo.workdir
+    db.find(:countries, 2)['name'].must_equal 'Brasil'
+    assert_empty_file_system repo
     assert_empty_status repo
   end
 
-  # Commit > push repo1, commit > pull repo2 (merge manual)
-  it 'Resolve conflicts' do
+  it 'Resolve conflicts (same ancestor)' do
     db.save :countries, id: 1, name: 'Argentina'
     db.commit 'First commit'
     db.push
 
-    clone_db.pull
-    clone_db.save :countries, id: 1, name: 'Uruguay'
-    clone_db.commit 'Second commit'
-    clone_db.push
+    other_db.pull
+    other_db.save :countries, id: 1, name: 'Uruguay'
+    other_db.commit 'Second commit'
+    other_db.push
 
     db.save :countries, id: 1, name: 'Brasil'
     db.commit 'Third commit'
@@ -92,8 +108,41 @@ describe ActiveGit::Database, 'Pull' do
 
     repo.index.count.must_equal 1
     db.find(:countries, 1)['name'].must_equal 'Brasil'
-    assert_empty_file_system repo.workdir
+    assert_empty_file_system repo
     assert_empty_status repo
+  end
+
+  it 'Resolve conflicts (without ancestor)' do
+    other_db.save :countries, id: 1, name: 'Uruguay'
+    other_db.commit 'Fists commit'
+    other_db.push
+
+    db.save :countries, id: 1, name: 'Argentina'
+    db.commit 'Second commit'
+    
+    db.pull
+
+    repo.index.count.must_equal 1
+    db.find(:countries, 1)['name'].must_equal 'Argentina'
+    assert_empty_file_system repo
+    assert_empty_status repo
+  end
+
+  it 'Specific remote' do
+    other_db.save :countries, id: 1, name: 'Argentina'
+    other_db.commit 'Test commit'
+    other_db.push remote: 'other'
+
+    error = proc { db.pull }.must_raise ActiveGit::Errors::InvalidBranch
+    error.branch_name.must_equal 'origin/master'
+    error.message.must_equal 'Invalid branch origin/master'
+    
+    db.pull remote: 'other'
+
+    repo.index.count.must_equal 1
+    db.find(:countries, 1)['name'].must_equal 'Argentina'
+    assert_empty_file_system repo
+    assert_empty_status repo    
   end
 
 end

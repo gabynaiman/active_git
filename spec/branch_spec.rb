@@ -35,4 +35,15 @@ describe ActiveGit::Database, 'Branch' do
     repo.branches['test'].target_id.must_equal commit_id
   end
 
+  it 'Pending commit' do
+    db.save :countries, id: 1, name: 'Argentina'
+
+    proc { db.branch 'test' }.must_raise ActiveGit::Errors::CommitPending
+
+    db.commit 'Test commit'
+    db.save :countries, id: 2, name: 'Uruguay'
+    
+    proc { db.branch 'test' }.must_raise ActiveGit::Errors::CommitPending
+  end
+
 end
