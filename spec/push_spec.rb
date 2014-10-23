@@ -2,11 +2,6 @@ require 'minitest_helper'
 
 describe ActiveGit::Database, 'Push' do
 
-  def read_content(repo, path)
-    oid = repo.index[path][:oid]
-    JSON.parse repo.lookup(oid).content
-  end
-
   it 'Default' do
     db.save :countries, id: 1, name: 'Argentina'
     db.commit 'Test commit'
