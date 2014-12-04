@@ -58,7 +58,7 @@ module ActiveGit
         synchronize_diffs diffs
       rescue => e
         ActiveGit.configuration.logger.error "[ActiveGit] #{e}"
-        last_log ? reset(last_log.commit_hash) : reset
+        repository.reset mode: :hard, commit: last_log.commit_hash || 'HEAD'
         return false
       end
 
