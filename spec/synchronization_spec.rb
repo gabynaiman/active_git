@@ -4,6 +4,7 @@ describe ActiveGit::Synchronizer do
 
   before :each do
     @file_helper = FileHelper.new
+    ActiveGit.configuration.working_path = @file_helper.create_temp_folder
   end
 
   after :each do
@@ -106,45 +107,52 @@ describe ActiveGit::Synchronizer do
       argentina.cities.count.should eq 2
       argentina.cities.should include(City.find_by_name 'Buenos Aires')
       argentina.cities.should include(City.find_by_name 'Rosario')
-      argentina.cities.should_not include(City.find_by_name 'Montevideo')
 
       uruguay = Country.find_by_name 'Uruguay'
 
       uruguay.cities.count.should eq 2
       uruguay.cities.should include(City.find_by_name 'Montevideo')
       uruguay.cities.should include(City.find_by_name 'Colonia')
-      uruguay.cities.should_not include(City.find_by_name 'Buenos Aires')
     end
 
     it 'Update' do
-      working_path = @file_helper.create_temp_folder
-
       country = Country.create! name: 'Argentina'
 
-      file_name = "#{working_path}/countries/#{country.id}.json"
-      @file_helper.write_file file_name, country.attributes.merge('name' => 'Brasil').to_json
+      @file_helper.write_file git_filename(country), country.attributes.merge('name' => 'Brasil').to_json
 
-      ActiveGit::Synchronizer.synchronize ActiveGit::DbUpdate.new(file_name, working_path)
+      ActiveGit::Synchronizer.synchronize ActiveGit::DbUpdate.new(git_filename(country))
 
       country.reload.name.should eq 'Brasil'
     end
 
     it 'Destroy' do
-      working_path = @file_helper.create_temp_folder
-
       country = Country.create! name: 'Argentina'
 
-      file_name = "#{working_path}/countries/#{country.id}.json"
-
-      ActiveGit::Synchronizer.synchronize ActiveGit::DbDelete.new(file_name, working_path)
+      ActiveGit::Synchronizer.synchronize ActiveGit::DbDelete.new(git_filename(country))
 
       Country.find_by_id(country.id).should be_nil
     end
 
+    it 'Destroy nested models' do
+      country1 = Country.create! name: 'Argentina'
+      country1.cities << City.new(name: 'Bs.As.')
+      country1.cities << City.new(name: 'Rosario')
+
+      country2 = Country.create! name: 'Uruguay'
+      country2.cities << City.new(name: 'Montevideo')
+      country2.cities << City.new(name: 'Colonia')
+
+      Country.count.should eq 2
+      City.count.should eq 4
+
+      ActiveGit::Synchronizer.synchronize ActiveGit::DbDelete.new(git_filename(country1))
+
+      Country.count.should eq 1
+      City.count.should eq 2
+    end
+
     it 'Batch size' do
       ActiveGit.configuration.sync_batch_size = 2
-
-      working_path = @file_helper.create_temp_folder
 
       countries = 10.times.map do |i|
         Country.new(name: "Country #{i}") do |country|
@@ -153,10 +161,10 @@ describe ActiveGit::Synchronizer do
           country.updated_at = Time.now
         end
       end
-      ActiveGit::Synchronizer.synchronize countries.map {|c| ActiveGit::FileSave.new(c, working_path)}
+      ActiveGit::Synchronizer.synchronize countries.map {|c| ActiveGit::FileSave.new(c)}
 
       events = countries.map do |country|
-        ActiveGit::DbCreate.new(ActiveGit::Inflector.filename(country, working_path), working_path)
+        ActiveGit::DbCreate.new(git_filename(country))
       end
 
       Country.should_receive(:import).

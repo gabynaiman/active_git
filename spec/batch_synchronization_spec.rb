@@ -4,6 +4,7 @@ describe ActiveGit do
 
   before :each do
     @file_helper = FileHelper.new
+    ActiveGit.configuration.working_path = @file_helper.create_temp_folder
   end
 
   after :each do

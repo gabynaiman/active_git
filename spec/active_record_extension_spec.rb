@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 require 'spec_helper'
 
 describe ActiveGit::ActiveRecord do
@@ -26,6 +28,17 @@ describe ActiveGit::ActiveRecord do
     json['name'].should eq language.name
   end
 
+  it 'Create included' do
+    country = Country.create! name: 'Argentina'
+    city = City.create! name: 'Bs.As.', country: country
+
+    JSON.parse(File.read(git_filename(country))).tap do |model|
+      model['cities'].should have(1).items
+      model['cities'][0]['id'].should eq city.id
+      model['cities'][0]['name'].should eq city.name
+    end
+  end
+
   it 'Update' do
     language = Language.create! name: 'Spanish'
 
@@ -38,6 +51,25 @@ describe ActiveGit::ActiveRecord do
     json['name'].should eq 'English'
   end
 
+  it 'Update included' do
+    country = Country.create! name: 'Argentina'
+    city = City.create! name: 'Bs.As.', country: country
+
+    JSON.parse(File.read(git_filename(country))).tap do |model|
+      model['cities'].should have(1).items
+      model['cities'][0]['id'].should eq city.id
+      model['cities'][0]['name'].should eq 'Bs.As.'
+    end
+
+    city.update_attributes name: 'Córdoba'
+
+    JSON.parse(File.read(git_filename(country))).tap do |model|
+      model['cities'].should have(1).items
+      model['cities'][0]['id'].should eq city.id
+      model['cities'][0]['name'].should eq 'Córdoba'
+    end
+  end
+
   it 'Destroy' do
     language = Language.create! name: 'Spanish'
 
@@ -46,6 +78,23 @@ describe ActiveGit::ActiveRecord do
     language.destroy
 
     File.exist?(git_filename(language)).should be false
+  end
+
+  it 'Destroy included' do
+    country = Country.create! name: 'Argentina'
+    city = City.create! name: 'Bs.As.', country: country
+
+    JSON.parse(File.read(git_filename(country))).tap do |model|
+      model['cities'].should have(1).items
+      model['cities'][0]['id'].should eq city.id
+      model['cities'][0]['name'].should eq 'Bs.As.'
+    end
+
+    city.destroy
+
+    JSON.parse(File.read(git_filename(country))).tap do |model|
+      model['cities'].should have(:no).items
+    end
   end
 
   it 'Dump' do
@@ -76,6 +125,18 @@ describe ActiveGit::ActiveRecord do
     country.language = language
 
     country.git_dump.should eq File.read("#{File.dirname(__FILE__)}/json/parent_child_dump.json")
+  end
+
+  it 'Included associations' do
+    Language.git_included_associations.should eq [:countries, :cities]
+    Country.git_included_associations.should eq [:language, :cities]
+    Brand.git_included_associations.should be_empty
+  end  
+
+  it 'Included models' do
+    Language.git_included_models.should eq [Country, City]
+    Country.git_included_models.should eq [Language, City]
+    Brand.git_included_models.should be_empty
   end
 
 end

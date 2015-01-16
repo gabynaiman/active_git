@@ -2,6 +2,15 @@ require 'spec_helper'
 
 describe ActiveGit::Inflector do
 
+  before :each do
+    @file_helper = FileHelper.new
+    ActiveGit.configuration.working_path = @file_helper.create_temp_folder
+  end
+
+  after :each do
+    @file_helper.remove_temp_folders
+  end
+
   let(:working_path) { '/home/git' }
 
   it 'Git path' do

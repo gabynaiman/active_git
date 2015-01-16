@@ -49,16 +49,15 @@ module ActiveGit
 
       unless repository.merge(commit)
         resolve_conflicts
-        diffs = diff 'HEAD'
         commit_all 'Resolve conflicts'
       end
 
-      diffs ||= repository.diff(last_log.commit_hash)
+      diffs ||= repository.diff("#{last_log.commit_hash}..HEAD")
       begin
         synchronize_diffs diffs
       rescue => e
         ActiveGit.configuration.logger.error "[ActiveGit] #{e}"
-        last_log ? reset(last_log.commit_hash) : reset
+        repository.reset mode: :hard, commit: last_log.commit_hash || 'HEAD'
         return false
       end
 
