@@ -11,12 +11,12 @@ module ActiveGit
       events = (Dir["#{ActiveGit.configuration.working_path}/*"] - ActiveGit.models.map { |m| Inflector.dirname(m) }).map do |folder|
         FolderRemove.new(folder)
       end
-
+      
       (models.any? ? models : ActiveGit.models).each do |model|
         events << FolderRemove.new(Inflector.dirname(model))
         events = events + model.all.map { |r| FileSave.new r }
       end
-
+      
       Synchronizer.synchronize events
     end
 
@@ -39,19 +39,24 @@ module ActiveGit
     end
 
     def pull(remote='origin', branch='master')
+      ActiveGit.configuration.logger.info "[ActiveGit] Fetch #{remote} #{branch}"
       fetch remote
       merge "#{remote}/#{branch}"
     end
 
     def merge(commit)
+      ActiveGit.configuration.logger.info "[ActiveGit] Merge Init"
+
       last_log = (log || []).first
       diffs = diff_reverse commit unless last_log
 
+      ActiveGit.configuration.logger.info "[ActiveGit] Merge repo GIT"
       unless repository.merge(commit)
         resolve_conflicts
         commit_all 'Resolve conflicts'
       end
 
+      ActiveGit.configuration.logger.info "[ActiveGit] Diff #{last_log.commit_hash}..HEAD"
       diffs ||= repository.diff("#{last_log.commit_hash}..HEAD")
       begin
         synchronize_diffs diffs
@@ -60,6 +65,7 @@ module ActiveGit
         repository.reset mode: :hard, commit: last_log.commit_hash || 'HEAD'
         return false
       end
+      ActiveGit.configuration.logger.info "[ActiveGit] Merge End"
 
       true
     end
@@ -69,6 +75,7 @@ module ActiveGit
     end
 
     def resolve_conflicts
+      ActiveGit.configuration.logger.info "[ActiveGit] Resolve conflicts"
       json_parse = Proc.new do |text|
         text.present? ? JSON.parse(text) : {}
       end
@@ -86,6 +93,7 @@ module ActiveGit
         FileSave.new(ModelParser.from_json(model, merge))
       end
 
+      ActiveGit.configuration.logger.info "[ActiveGit] Resolve conflicts synchornize events"
       Synchronizer.synchronize events
     end
 
@@ -107,7 +115,9 @@ module ActiveGit
     end
 
     def reset(commit='HEAD')
+      ActiveGit.configuration.logger.info "[ActiveGit] Reset Init"
       diffs = diff_reverse commit
+      ActiveGit.configuration.logger.info "[ActiveGit] Reset repo GIT"
       if repository.reset mode: :hard, commit: commit
         begin
           synchronize_diffs diffs
@@ -125,6 +135,7 @@ module ActiveGit
     private
 
     def synchronize_diffs(diffs)
+      ActiveGit.configuration.logger.info "[ActiveGit] Synchronize diffs"
       events = diffs.map do |d|
         file_name = "#{location}/#{d.file_name}"
 
@@ -138,7 +149,7 @@ module ActiveGit
           raise "Unexpected file status [#{d.status}]"
         end
       end
-
+      ActiveGit.configuration.logger.info "[ActiveGit] Init synchronize diff events"
       Synchronizer.synchronize events
     end
 
