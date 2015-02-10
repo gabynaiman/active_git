@@ -11,14 +11,30 @@ module ActiveGit
       events = (Dir["#{ActiveGit.configuration.working_path}/*"] - ActiveGit.models.map { |m| Inflector.dirname(m) }).map do |folder|
         FolderRemove.new(folder)
       end
+      #Synchronizer.synchronize events if events.any?
       
       (models.any? ? models : ActiveGit.models).each do |model|
+        puts model
         events << FolderRemove.new(Inflector.dirname(model))
-        events = events + model.all.map { |r| FileSave.new r }
+        Synchronizer.synchronize events
+        
+        instances = model.all
+        i = 0
+        puts "files: #{instances.count}"
+        instances.each_slice(1000) do |partition_instances|
+          i += 1
+          puts "lote #{i} (#{partition_instances.count} archivos)"
+          Synchronizer.synchronize partition_instances.map { |r| FileSave.new r } 
+          puts "synchronized"
+          instances = instances - partition_instances
+          puts "restan: #{instances.count}"
+        end
+        
       end
-      
-      Synchronizer.synchronize events
+
+      Synchronizer.synchronize events if events.any?
     end
+
 
     def load_files(*models)
       events = []
